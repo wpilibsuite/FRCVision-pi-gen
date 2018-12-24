@@ -17,7 +17,7 @@ jobs:
           cd deps && ./01-download.sh && ./02-extract.sh && ./03-build.sh && ./04-copy.sh
         displayName: 'Build Image Dependencies'
       - script: |
-          dpkg-reconfigure qemu-user-static
+          sudo dpkg-reconfigure qemu-user-static
           ./build.sh
         displayName: 'Build Image'
       - task: CopyFiles@2
