@@ -19,11 +19,8 @@ jobs:
         displayName: 'Build Image Dependencies'
       - script: |
           sudo sh -c 'dpkg-reconfigure qemu-user-static && ./build.sh'
+          cp deploy/*.zip $BUILD_ARTIFACTSTAGINGDIRECTORY
         displayName: 'Build Image'
-      - task: CopyFiles@2
-        inputs:
-          contents: 'deploy/*.zip'
-          targetFolder: $(Build.ArtifactStagingDirectory)
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: 'FRCVisionImage'
