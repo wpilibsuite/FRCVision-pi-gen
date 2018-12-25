@@ -9,5 +9,4 @@ RUN apt-get -y update \
         bsdtar libcap2-bin rsync grep udev xz-utils curl xxd file \
         build-essential cmake python3 ant sudo \
     && apt-get -y -t stretch-backports install openjdk-11-jdk \
-    && dpkg-reconfigure qemu-user-static \
     && rm -rf /var/lib/apt/lists/*
