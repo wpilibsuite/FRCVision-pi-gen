@@ -2,6 +2,7 @@ resources:
   containers:
   - container: pi-gen
     image: wpilib/pi-gen:latest
+    options: --privileged
 
 jobs:
  - job: 'Main'
