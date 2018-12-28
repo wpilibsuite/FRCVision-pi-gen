@@ -32,6 +32,7 @@ popd
 # opencv sources
 tar xzf ../01-download/3.4.4.tar.gz
 mv opencv-3.4.4 opencv
+sed -i -e 's/javac sourcepath/javac target="1.8" source="1.8" sourcepath/' opencv/modules/java/jar/build.xml.in
 cp ../thirdparty-opencv/arm-pi-gnueabihf.toolchain.cmake .
 cp -R ../thirdparty-opencv/jni .
 

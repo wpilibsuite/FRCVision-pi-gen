@@ -27,7 +27,7 @@ void Application::Set(wpi::StringRef appType,
   wpi::StringRef appCommand;
 
   if (appType == "builtin") {
-    appCommand = "./multiCameraServer";
+    appCommand = "/usr/local/frc/bin/multiCameraServer";
   } else if (appType == "example-java") {
     appDir = "java-multiCameraServer";
     appCommand =
