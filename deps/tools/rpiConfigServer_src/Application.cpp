@@ -7,6 +7,9 @@
 
 #include "Application.h"
 
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <wpi/FileSystem.h>
 #include <wpi/json.h>
 #include <wpi/raw_istream.h>
@@ -104,17 +107,27 @@ void Application::Upload(wpi::ArrayRef<uint8_t> contents,
   pathname += filename;
 
   {
-    // write file
+    // open file for writing
     std::error_code ec;
-    wpi::raw_fd_ostream os(pathname, ec, wpi::sys::fs::F_None);
-    if (ec) {
+    int fd;
+    if (wpi::sys::fs::openFileForWrite(pathname, fd, wpi::sys::fs::F_None)) {
       wpi::SmallString<64> msg;
       msg = "could not write ";
       msg += pathname;
       onFail(msg);
       return;
     }
-    os << contents;
+
+    // change ownership
+    int err = fchown(fd, APP_UID, APP_GID);
+
+    // set file to be executable
+    err = fchmod(fd, 0775);
+
+    (void)err;
+
+    // write contents and close file
+    wpi::raw_fd_ostream(fd, true) << contents;
   }
 
   // terminate vision process so it reloads
