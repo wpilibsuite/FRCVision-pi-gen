@@ -63,7 +63,7 @@ build_opencv () {
         -DPYTHON3_INCLUDE_PATH=${PWD}/../../02-extract/raspbian9/arm-raspbian9-linux-gnueabihf/usr/include/python3.5m \
         -DPYTHON3_NUMPY_INCLUDE_DIRS=${PWD}/../../02-extract/raspbian9/arm-raspbian9-linux-gnueabihf/usr/include/python3.5m/numpy \
         -DOPENCV_EXTRA_FLAGS_DEBUG=-Og \
-        -DCMAKE_MODULE_PATH=${PWD}/../../thirdparty-opencv/arm-frc-modules \
+        -DCMAKE_MODULE_PATH=${PWD}/../../02-extract/cmake-modules \
         || exit 1
     make -j3 || exit 1
     make install || exit 1
@@ -95,7 +95,7 @@ build_wpilib () {
     cmake ../../allwpilib \
         -DCMAKE_BUILD_TYPE=$1 \
         -DCMAKE_TOOLCHAIN_FILE=${PWD}/../../02-extract/arm-pi-gnueabihf.toolchain.cmake \
-        -DCMAKE_MODULE_PATH=${PWD}/../../allwpilib-cmake-modules \
+        -DCMAKE_MODULE_PATH=${PWD}/../../02-extract/cmake-modules \
         -DOPENCV_JAR_FILE=`ls ${PWD}/../opencv-build/install/share/OpenCV/java/opencv-*.jar` \
         -DOPENCV_JNI_FILE=`ls ${PWD}/../opencv-build/install/share/OpenCV/java/libopencv_java*.so` \
         -DOpenCV_DIR=${PWD}/../$2/install/share/OpenCV \
@@ -120,7 +120,7 @@ pushd 03-build/allwpilib-static
 cmake ../../allwpilib \
     -DCMAKE_BUILD_TYPE=RelWithDebugInfo \
     -DCMAKE_TOOLCHAIN_FILE=${PWD}/../../02-extract/arm-pi-gnueabihf.toolchain.cmake \
-    -DCMAKE_MODULE_PATH=${PWD}/../../allwpilib-cmake-modules \
+    -DCMAKE_MODULE_PATH=${PWD}/../../02-extract/cmake-modules \
     -DOpenCV_DIR=${PWD}/../opencv-static/install/share/OpenCV \
     -DWITHOUT_JAVA=ON \
     -DBUILD_SHARED_LIBS=OFF \
