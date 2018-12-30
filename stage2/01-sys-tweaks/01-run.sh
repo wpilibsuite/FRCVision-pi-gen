@@ -108,8 +108,8 @@ cat extfiles/cameraserver-include.tar.gz | sh -c "cd ${ROOTFS_DIR}/usr/local/frc
 
 install -v -d "${ROOTFS_DIR}/usr/local/frc/share/OpenCV"
 
-cat extfiles/libopencv-cmake-debug.tar.gz | sh -c "cd ${ROOTFS_DIR}/usr/local/frc/share/OpenCV/ && tar xzf -"
-cat extfiles/libopencv-cmake.tar.gz | sh -c "cd ${ROOTFS_DIR}/usr/local/frc/share/OpenCV/ && tar xzf -"
+cat extfiles/opencv-cmake-debug.tar.gz | sh -c "cd ${ROOTFS_DIR}/usr/local/frc/share/OpenCV/ && tar xzf -"
+cat extfiles/opencv-cmake.tar.gz | sh -c "cd ${ROOTFS_DIR}/usr/local/frc/share/OpenCV/ && tar xzf -"
 
 install -v -d "${ROOTFS_DIR}/usr/local/frc/java"
 
