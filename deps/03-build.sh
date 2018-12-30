@@ -86,7 +86,7 @@ popd
 
 mkdir -p 03-build/opencv-static
 pushd 03-build/opencv-static
-build_opencv Debug OFF || exit 1
+build_opencv RelWithDebugInfo OFF || exit 1
 popd
 
 # wpiutil, cscore, ntcore, cameraserver
