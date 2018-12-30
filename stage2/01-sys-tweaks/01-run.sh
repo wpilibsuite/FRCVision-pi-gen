@@ -127,7 +127,7 @@ mv *.zip ../zips/
 chown -R 1000:1000 .
 EOF
 
-sh -c "cd ${ROOTFS_DIR}/usr/local/frc/java && zip /home/pi/zips/java-multiCameraServer.zip *.jar"
+sh -c "cd ${ROOTFS_DIR}/usr/local/frc/java && zip ${ROOTFS_DIR}/home/pi/zips/java-multiCameraServer.zip *.jar"
 
 on_chroot << EOF
 chown -R 1000:1000 /home/pi/zips
