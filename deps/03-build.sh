@@ -99,6 +99,7 @@ build_wpilib () {
         -DOPENCV_JAR_FILE=`ls ${PWD}/../opencv-build/install/share/OpenCV/java/opencv-*.jar` \
         -DOPENCV_JNI_FILE=`ls ${PWD}/../opencv-build/install/share/OpenCV/java/libopencv_java*.so` \
         -DOpenCV_DIR=${PWD}/../$2/install/share/OpenCV \
+        -DTHREADS_PTHREAD_ARG=-pthread \
         || exit 1
     make -j3 || exit 1
     split_debug_so lib
@@ -124,6 +125,7 @@ cmake ../../allwpilib \
     -DOpenCV_DIR=${PWD}/../opencv-static/install/share/OpenCV \
     -DWITHOUT_JAVA=ON \
     -DBUILD_SHARED_LIBS=OFF \
+    -DTHREADS_PTHREAD_ARG=-pthread \
     || exit 1
 make -j3 || exit 1
 split_debug_exe bin
