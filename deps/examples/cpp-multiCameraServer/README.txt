@@ -25,7 +25,7 @@ Install the Raspbian compiler [1] as well as GNU make [2].
 Building
 --------
 
-Run "make CXX=arm-raspbian9-linux-gnueabihf-g++"
+Run "make"
 
 ---------
 Deploying
