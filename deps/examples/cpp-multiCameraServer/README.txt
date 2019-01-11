@@ -21,10 +21,6 @@ Install the Raspbian compiler [1] as well as GNU make [2].
 [1]: https://github.com/wpilibsuite/raspbian-toolchain/releases
 [2]: (windows) http://gnuwin32.sourceforge.net/packages/make.htm
 
-The lib and include directories from the Pi /usr/local/frc/ directory must
-be copied to the desktop machine.  Edit the Makefile to change
-/usr/local/frc/lib and /usr/local/frc/include to the local desktop locations.
-
 --------
 Building
 --------
