@@ -286,7 +286,7 @@ void ProcessWsText(wpi::WebSocket& ws, wpi::StringRef msg) {
       return;
     }
 
-    if (subType == "applicationSave") {
+    if (subType == "Save") {
       Application::GetInstance()->Set(appType, statusFunc);
     } else if (subType == "StartUpload") {
       auto d = ws.GetData<WebSocketData>();
