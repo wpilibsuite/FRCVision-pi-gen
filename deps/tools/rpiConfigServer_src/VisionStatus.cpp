@@ -15,11 +15,13 @@
 
 #include <cstring>
 
+#include <cscore.h>
 #include <wpi/SmallString.h>
 #include <wpi/StringRef.h>
 #include <wpi/json.h>
 #include <wpi/raw_ostream.h>
 #include <wpi/uv/Buffer.h>
+#include <wpi/uv/FsEvent.h>
 #include <wpi/uv/Pipe.h>
 #include <wpi/uv/Process.h>
 #include <wpi/uv/Work.h>
@@ -31,6 +33,89 @@ namespace uv = wpi::uv;
 std::shared_ptr<VisionStatus> VisionStatus::GetInstance() {
   static auto visStatus = std::make_shared<VisionStatus>(private_init{});
   return visStatus;
+}
+
+void VisionStatus::SetLoop(std::shared_ptr<wpi::uv::Loop> loop) {
+  m_loop = std::move(loop);
+  auto devEvents = wpi::uv::FsEvent::Create(m_loop);
+  devEvents->fsEvent.connect([this](const char* fn, int flags) {
+    if (wpi::StringRef(fn).startswith("video")) RefreshCameraList();
+  });
+  devEvents->Start("/dev");
+  devEvents->Unreference();
+  RefreshCameraList();
+}
+
+void VisionStatus::UpdateCameraList() {
+  wpi::json j = {{"type", "cameraList"}, {"cameras", wpi::json::array()}};
+  auto& cams = j["cameras"];
+  for (const auto& caminfo : m_cameraInfo) {
+    wpi::json cam = {{"dev", caminfo.info.dev},
+                     {"path", caminfo.info.path},
+                     {"name", caminfo.info.name},
+                     {"otherPaths", wpi::json::array()},
+                     {"modes", wpi::json::array()}};
+
+    auto& otherPaths = cam["otherPaths"];
+    for (const auto& path : caminfo.info.otherPaths)
+      otherPaths.emplace_back(path);
+
+    auto& modes = cam["modes"];
+    for (const auto& mode : caminfo.modes) {
+      wpi::json jmode;
+
+      wpi::StringRef pixelFormatStr;
+      switch (mode.pixelFormat) {
+        case cs::VideoMode::kMJPEG:
+          pixelFormatStr = "mjpeg";
+          break;
+        case cs::VideoMode::kYUYV:
+          pixelFormatStr = "yuyv";
+          break;
+        case cs::VideoMode::kRGB565:
+          pixelFormatStr = "rgb565";
+          break;
+        case cs::VideoMode::kBGR:
+          pixelFormatStr = "bgr";
+          break;
+        case cs::VideoMode::kGray:
+          pixelFormatStr = "gray";
+          break;
+        default:
+          continue;
+      }
+      jmode.emplace("pixelFormat", pixelFormatStr);
+
+      jmode.emplace("width", mode.width);
+      jmode.emplace("height", mode.height);
+      jmode.emplace("fps", mode.fps);
+
+      modes.emplace_back(jmode);
+    }
+    cams.emplace_back(cam);
+  }
+  cameraList(j);
+}
+
+void VisionStatus::RefreshCameraList() {
+  struct RefreshCameraWorkReq : public uv::WorkReq {
+    std::vector<CameraInfo> cameraInfo;
+  };
+  auto workReq = std::make_shared<RefreshCameraWorkReq>();
+  workReq->work.connect([r = workReq.get()] {
+    CS_Status status = 0;
+    for (auto&& caminfo : cs::EnumerateUsbCameras(&status)) {
+      cs::UsbCamera camera{"usbcam", caminfo.dev};
+      r->cameraInfo.emplace_back();
+      r->cameraInfo.back().info = std::move(caminfo);
+      r->cameraInfo.back().modes = camera.EnumerateVideoModes();
+    }
+  });
+  workReq->afterWork.connect([ this, r = workReq.get() ] {
+    m_cameraInfo = std::move(r->cameraInfo);
+    UpdateCameraList();
+  });
+  uv::QueueWork(m_loop, workReq);
 }
 
 void VisionStatus::RunSvc(const char* cmd,
