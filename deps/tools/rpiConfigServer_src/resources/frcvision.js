@@ -41,7 +41,7 @@ function displayStatus(message) {
 
 // Enable and disable buttons based on connection status
 var connectedButtonIds = ['systemRestart', 'networkApproach', 'networkAddress', 'networkMask', 'networkGateway', 'networkDNS', 'visionUp', 'visionDown', 'visionTerm', 'visionKill', 'systemReadOnly', 'systemWritable', 'visionClient', 'visionTeam', 'visionDiscard', 'addConnectedCamera', 'addCamera', 'applicationType'];
-var connectedButtonClasses = ['cameraName', 'cameraPath', 'cameraPixelFormat', 'cameraWidth', 'cameraHeight', 'cameraFps', 'cameraBrightness', 'cameraWhiteBalance', 'cameraExposure', 'cameraProperties', 'cameraRemove', 'cameraCopyConfig']
+var connectedButtonClasses = ['cameraName', 'cameraPath', 'cameraAlternatePaths', 'cameraPixelFormat', 'cameraWidth', 'cameraHeight', 'cameraFps', 'cameraBrightness', 'cameraWhiteBalance', 'cameraExposure', 'cameraProperties', 'cameraRemove', 'cameraCopyConfig']
 var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave'];
 var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemMemoryAvail1s', 'systemMemoryAvail5s',
@@ -54,6 +54,7 @@ function displayDisconnected() {
   displayReadOnly();
   $('#connectionBadge').removeClass('badge-primary').addClass('badge-secondary').text('Disconnected');
   $('#visionServiceStatus').removeClass('badge-primary').removeClass('badge-secondary').addClass('badge-dark').text('Unknown Status');
+  $('.cameraConnectionBadge').removeClass('badge-primary').removeClass('badge-secondary').addClass('badge-dark').text('Unknown Status');
   for (var i = 0; i < connectedButtonIds.length; i++) {
     $('#' + connectedButtonIds[i]).prop('disabled', true);
   }
@@ -574,7 +575,7 @@ function updateCameraListView() {
   // disable all the alternate paths by default
   visionSettingsDisplay.cameras.forEach(function (value, k) {
     var cameraElem = $('#camera' + k);
-    cameraElem.find('.cameraConnectionBadge').removeClass('badge-primary').addClass('badge-secondary').text('Disconnected');
+    cameraElem.find('.cameraConnectionBadge').removeClass('badge-dark').removeClass('badge-primary').addClass('badge-secondary').text('Disconnected');
     cameraElem.find('.cameraAlternatePathsList').html('');
     cameraElem.find('.cameraAlternatePaths').prop('disabled', true);
   });
@@ -595,15 +596,13 @@ function updateCameraListView() {
           matchedCamera = true;
 
           // show camera as connected
-          cameraElem.find('.cameraConnectionBadge').removeClass('badge-secondary').addClass('badge-primary').text('Connected');
+          cameraElem.find('.cameraConnectionBadge').removeClass('badge-dark').removeClass('badge-secondary').addClass('badge-primary').text('Connected');
 
           // build alternate path list
           var setAlternateDropdown = cameraElem.find('.cameraAlternatePathsList');
           setAlternateDropdown.html('');
           paths.forEach(function (altPath, j) {
-            if (altPath !== path) {
-              setAlternateDropdown.append('<button class="dropdown-item cameraSetAlternatePath" type="button">' + altPath + '</button>');
-            }
+            setAlternateDropdown.append('<button class="dropdown-item cameraSetAlternatePath" type="button">' + altPath + '</button>');
           });
 
           cameraElem.find('.cameraAlternatePaths').prop('disabled', setAlternateDropdown.html() === '');
