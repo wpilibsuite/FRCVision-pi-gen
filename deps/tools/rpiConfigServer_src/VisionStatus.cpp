@@ -24,6 +24,7 @@
 #include <wpi/uv/FsEvent.h>
 #include <wpi/uv/Pipe.h>
 #include <wpi/uv/Process.h>
+#include <wpi/uv/Timer.h>
 #include <wpi/uv/Work.h>
 
 namespace uv = wpi::uv;
@@ -37,13 +38,20 @@ std::shared_ptr<VisionStatus> VisionStatus::GetInstance() {
 
 void VisionStatus::SetLoop(std::shared_ptr<wpi::uv::Loop> loop) {
   m_loop = std::move(loop);
+
+  auto refreshTimer = wpi::uv::Timer::Create(m_loop);
+  refreshTimer->timeout.connect([this] { RefreshCameraList(); });
+  refreshTimer->Unreference();
+
   auto devEvents = wpi::uv::FsEvent::Create(m_loop);
-  devEvents->fsEvent.connect([this](const char* fn, int flags) {
-    if (wpi::StringRef(fn).startswith("video")) RefreshCameraList();
+  devEvents->fsEvent.connect([refreshTimer](const char* fn, int flags) {
+    if (wpi::StringRef(fn).startswith("video"))
+      refreshTimer->Start(wpi::uv::Timer::Time(200));
   });
   devEvents->Start("/dev");
   devEvents->Unreference();
-  RefreshCameraList();
+
+  refreshTimer->Start(wpi::uv::Timer::Time(200));
 }
 
 void VisionStatus::UpdateCameraList() {
