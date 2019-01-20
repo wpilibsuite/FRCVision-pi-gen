@@ -4,7 +4,7 @@
 	{
 	    "name": "rPi Camera 0",
 	    "path": "/dev/video0",
-	    "pixel format": "mjpeg",
+	    "pixel format": "yuyv",
 	    "width": 160,
 	    "height": 120,
 	    "fps": 30
