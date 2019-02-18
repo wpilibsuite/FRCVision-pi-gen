@@ -674,12 +674,14 @@ $('#addUsbCamera').click(function() {
   visionSettingsDisplay.cameras.push({});
   appendNewVisionCameraView({}, i);
   updateCameraListView();
+  $('#cameraBody' + i).collapse('show');
 });
 
 $('#addSwitchedCamera').click(function() {
   var i = visionSettingsDisplay['switched cameras'].length;
   visionSettingsDisplay['switched cameras'].push({});
   appendNewVisionSwitchedCameraView({}, i);
+  $('#switchedCameraBody' + i).collapse('show');
 });
 
 function updateCameraListView() {
@@ -747,6 +749,7 @@ function updateCameraListView() {
     visionSettingsDisplay.cameras.push(camera);
     appendNewVisionCameraView(camera, i);
     updateCameraListView();
+    $('#cameraBody' + i).collapse('show');
   });
 }
 
