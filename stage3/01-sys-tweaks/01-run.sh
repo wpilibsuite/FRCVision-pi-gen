@@ -37,27 +37,33 @@ wget -nc -nv \
 
 # opencv sources
 wget -nc -nv \
-    https://github.com/opencv/opencv/archive/3.4.4.tar.gz
+    https://github.com/opencv/opencv/archive/3.4.4.tar.gz \
+    || exit 1
 
 # allwpilib
 wget -nc -nv -O allwpilib.tar.gz \
-    https://github.com/wpilibsuite/allwpilib/archive/v2019.3.2.tar.gz
+    https://github.com/wpilibsuite/allwpilib/archive/v2019.3.2.tar.gz \
+    || exit 1
 
 # pynetworktables
 wget -nc -nv -O pynetworktables.whl \
-    https://files.pythonhosted.org/packages/source/p/pynetworktables/pynetworktables-2019.0.0-py3-none-any.whl
+    https://files.pythonhosted.org/packages/86/6d/b32c5232281a9c7a76822bb58d3803f8b1fe502954b08580a8425a899ea1/pynetworktables-2019.0.0-py3-none-any.whl \
+    || exit 1
 
 # robotpy-cscore
 wget -nc -nv -O robotpy-cscore.tar.gz \
-    https://github.com/robotpy/robotpy-cscore/archive/2019.1.0.tar.gz
+    https://github.com/robotpy/robotpy-cscore/archive/2019.1.0.tar.gz \
+    || exit 1
 
 # pybind11 submodule of robotpy-cscore
 wget -nc -nv -O pybind11.tar.gz \
-    https://github.com/pybind/pybind11/archive/v2.2.tar.gz
+    https://github.com/pybind/pybind11/archive/v2.2.tar.gz \
+    || exit 1
 
 # pixy2
 wget -nc -nv -O pixy2.tar.gz \
-    https://github.com/charmedlabs/pixy2/archive/2adc6caba774a3056448d0feb0c6b89855a392f4.tar.gz
+    https://github.com/charmedlabs/pixy2/archive/2adc6caba774a3056448d0feb0c6b89855a392f4.tar.gz \
+    || exit 1
 
 popd
 
