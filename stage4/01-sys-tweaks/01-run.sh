@@ -58,11 +58,11 @@ popd
 export PKG_CONFIG_LIBDIR=${ROOTFS_DIR}/usr/lib/arm-linux-gnueabihf/pkgconfig:${ROOTFS_DIR}/usr/lib/pkgconfig:${ROOTFS_DIR}/usr/share/pkgconfig:${ROOTFS_DIR}/usr/local/frc/lib/pkgconfig
 
 sh -c "cd ${BASE_DIR}/deps && tar cf - examples" | \
-    sh -c "cd ${ROOTFS_DIR}/home/pi && tar xf -"
-for dir in ${ROOTFS_DIR}/home/pi/examples/*; do
+    sh -c "cd ${ROOTFS_DIR}/home/${FIRST_USER_NAME} && tar xf -"
+for dir in ${ROOTFS_DIR}/home/${FIRST_USER_NAME}/examples/*; do
     cp "${BASE_DIR}/LICENSE.txt" "${dir}/"
 done
-chown -R 1000:1000 "${ROOTFS_DIR}/home/pi/examples"
+chown -R 1000:1000 "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/examples"
 
 rm -rf "${STAGE_WORK_DIR}/examples"
 sh -c "cd ${BASE_DIR}/deps && tar cf - examples" | \
@@ -105,8 +105,8 @@ zip -r cpp-multiCameraServer.zip cpp-multiCameraServer
 zip -r python-multiCameraServer.zip python-multiCameraServer
 
 # install zips
-install -v -o 1000 -g 1000 -d "${ROOTFS_DIR}/home/pi/zips/"
-install -v -o 1000 -g 1000 *.zip "${ROOTFS_DIR}/home/pi/zips/"
+install -v -o 1000 -g 1000 -d "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/zips/"
+install -v -o 1000 -g 1000 *.zip "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/zips/"
 
 popd
 
@@ -137,7 +137,7 @@ EOF
 #
 # Set up pi user scripts
 #
-install -m 755 -o 1000 -g 1000 files/runCamera "${ROOTFS_DIR}/home/pi/"
-install -m 755 -o 1000 -g 1000 files/runInteractive "${ROOTFS_DIR}/home/pi/"
-install -m 755 -o 1000 -g 1000 files/runService "${ROOTFS_DIR}/home/pi/"
+install -m 755 -o 1000 -g 1000 files/runCamera "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/"
+install -m 755 -o 1000 -g 1000 files/runInteractive "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/"
+install -m 755 -o 1000 -g 1000 files/runService "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/"
 
