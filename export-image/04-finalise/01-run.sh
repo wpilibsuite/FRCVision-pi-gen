@@ -5,15 +5,15 @@ INFO_FILE="${STAGE_WORK_DIR}/${IMG_FILENAME}.info"
 EXAMPLE_DIR="${STAGE_WORK_DIR}/examples"
 
 mkdir -p "${EXAMPLE_DIR}"
-cp -p "${ROOTFS_DIR}"/home/pi/zips/* "${EXAMPLE_DIR}/"
+cp -p "${ROOTFS_DIR}"/home/${FIRST_USER_NAME}/zips/* "${EXAMPLE_DIR}/"
 
 on_chroot << EOF
 /etc/init.d/fake-hwclock stop
 hardlink -t /usr/share/doc
 EOF
 
-if [ -d "${ROOTFS_DIR}/home/pi/.config" ]; then
-	chmod 700 "${ROOTFS_DIR}/home/pi/.config"
+if [ -d "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.config" ]; then
+	chmod 700 "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.config"
 fi
 
 rm -f "${ROOTFS_DIR}/etc/apt/apt.conf.d/51cache"
