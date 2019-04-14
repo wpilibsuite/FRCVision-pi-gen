@@ -36,7 +36,7 @@ configServer: ${OBJS}
 	${CXX} -g -O -Wall -c -o $@ \
 	    ${CXXFLAGS} \
 	    ${DEPS_CFLAGS} \
-	    '-DEXEC_HOME="/home${FIRST_USER_NAME}"' \
+	    '-DEXEC_HOME="/home/${FIRST_USER_NAME}"' \
 	    '-DFRC_JSON="${FRC_JSON}"' \
 	    '-DDHCPCD_CONF="${DHCPCD_CONF}"' \
 	    '-DAPP_UID=${APP_UID}' \
