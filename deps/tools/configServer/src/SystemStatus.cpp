@@ -23,6 +23,7 @@ void SystemStatus::UpdateAll() {
   UpdateMemory();
   UpdateCpu();
   UpdateNetwork();
+  UpdateTemp();
   status(GetStatusJson());
   writable(GetWritable());
 }
@@ -86,6 +87,15 @@ wpi::json SystemStatus::GetStatusJson() {
       j["systemNetwork5s"] = (last.recvBytes + last.xmitBytes -
                               first.recvBytes - first.xmitBytes) *
                              8 / 5000;
+    }
+  }
+
+  // temperature
+  {
+    uint64_t first;
+    if (m_temp.GetFirstLast(&first, nullptr, &qty)) {
+      j["systemCpuTemp1s"] = first / 1000;
+      if (qty >= 5) j["systemCpuTemp5s"] = m_temp.GetTotal() / qty / 1000;
     }
   }
 
@@ -206,4 +216,19 @@ void SystemStatus::UpdateNetwork() {
   }
 
   m_network.Add(data);
+}
+
+void SystemStatus::UpdateTemp() {
+  std::error_code ec;
+  wpi::raw_fd_istream is("/sys/class/thermal/thermal_zone0/temp", ec);
+  if (ec) return;
+  wpi::SmallString<256> lineBuf;
+  while (!is.has_error()) {
+    wpi::StringRef line = is.getline(lineBuf, 256).trim();
+    if (line.empty()) break;
+
+    uint64_t amt;
+    if (line.getAsInteger(10, amt)) continue;
+    m_temp.Add(amt);
+  }
 }

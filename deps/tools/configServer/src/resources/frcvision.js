@@ -56,7 +56,8 @@ var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemCpuUser1s', 'systemCpuUser5s',
                        'systemCpuSystem1s', 'systemCpuSystem5s',
                        'systemCpuIdle1s', 'systemCpuIdle5s',
-                       'systemNetwork1s', 'systemNetwork5s'];
+                       'systemNetwork1s', 'systemNetwork5s',
+                       'systemCpuTemp1s', 'systemCpuTemp5s'];
 
 function displayDisconnected() {
   displayReadOnly();

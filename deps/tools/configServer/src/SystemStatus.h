@@ -40,6 +40,7 @@ class SystemStatus {
   void UpdateMemory();
   void UpdateCpu();
   void UpdateNetwork();
+  void UpdateTemp();
 
   DataHistory<uint64_t, 5> m_memoryFree;
   DataHistory<uint64_t, 5> m_memoryAvail;
@@ -56,6 +57,7 @@ class SystemStatus {
     uint64_t xmitBytes = 0;
   };
   DataHistory<NetworkData, 6> m_network;
+  DataHistory<uint64_t, 5> m_temp;
 };
 
 #endif  // RPICONFIGSERVER_SYSTEMSTATUS_H_
