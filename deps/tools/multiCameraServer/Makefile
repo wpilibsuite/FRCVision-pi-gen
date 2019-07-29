@@ -1,4 +1,4 @@
-DEPS_CFLAGS?=$(shell pkg-config --cflags cameraserver ntcore wpiutil)
+DEPS_CFLAGS?=$(shell pkg-config --cflags cameraserver ntcore wpiutil) -std=c++17
 DEPS_LIBS?=$(shell pkg-config --libs --static cameraserver ntcore wpiutil)
 
 .PHONY: all clean

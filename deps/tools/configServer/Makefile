@@ -1,5 +1,5 @@
 IMG_VERSION?=$(shell git describe)
-DEPS_CFLAGS?=$(shell pkg-config --cflags cscore wpiutil)
+DEPS_CFLAGS?=$(shell pkg-config --cflags cscore wpiutil) -std=c++17
 DEPS_LIBS?=$(shell pkg-config --libs --static cscore wpiutil)
 EXEC_HOME?=/home/pi
 FRC_JSON?=/boot/frc.json
