@@ -1,6 +1,7 @@
 IMG_VERSION?=$(shell git describe)
 DEPS_CFLAGS?=$(shell pkg-config --cflags cscore wpiutil)
 DEPS_LIBS?=$(shell pkg-config --libs --static cscore wpiutil)
+EXEC_HOME?=/home/${FIRST_USER_NAME}
 FRC_JSON?=/boot/frc.json
 DHCPCD_CONF?=/boot/dhcpcd.conf
 APP_UID?=1000
@@ -36,7 +37,7 @@ configServer: ${OBJS}
 	${CXX} -g -O -Wall -c -o $@ \
 	    ${CXXFLAGS} \
 	    ${DEPS_CFLAGS} \
-	    '-DEXEC_HOME="/home/${FIRST_USER_NAME}"' \
+	    '-DEXEC_HOME="${EXEC_HOME}"' \
 	    '-DFRC_JSON="${FRC_JSON}"' \
 	    '-DDHCPCD_CONF="${DHCPCD_CONF}"' \
 	    '-DAPP_UID=${APP_UID}' \
