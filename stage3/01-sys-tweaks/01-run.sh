@@ -176,12 +176,13 @@ cp -p "${ROOTFS_DIR}/usr/local/frc/share/OpenCV/java/opencv-347.jar" "${ROOTFS_D
 
 # the opencv build names the python .so with the build platform name
 # instead of the target platform, so rename it
-pushd "${ROOTFS_DIR}/usr/local/frc/python/cv2/python-3.7"
+pushd "${ROOTFS_DIR}/usr/local/frc/lib/python3.7/dist-packages/cv2/python-3.7"
 mv cv2.cpython-37m-*-gnu.so cv2.cpython-37m-arm-linux-gnueabihf.so
+mv cv2d.cpython-37m-*-gnu.so cv2d.cpython-37m-arm-linux-gnueabihf.so
 popd
 
 # link python package to dist-packages
-ln -sf /usr/local/frc/python/cv2 "${ROOTFS_DIR}/usr/local/lib/python3.7/dist-packages/cv2"
+ln -sf /usr/local/frc/lib/python3.7/dist-packages/cv2 "${ROOTFS_DIR}/usr/local/lib/python3.7/dist-packages/cv2"
 
 #
 # Build wpiutil, cscore, ntcore, cameraserver
