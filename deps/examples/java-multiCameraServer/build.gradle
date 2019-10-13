@@ -22,7 +22,7 @@ dependencies {
     compile name: 'ntcore'
     compile name: 'cscore'
     compile name: 'cameraserver'
-    compile name: 'opencv-344'
+    compile name: 'opencv-347'
     compile name: 'wpilibj'
     compile name: 'wpiHal'
 }
