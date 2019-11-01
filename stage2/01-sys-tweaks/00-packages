@@ -26,3 +26,5 @@ policykit-1
 ssh-import-id
 rng-tools
 ethtool
+libedgetpu1-std
+python3-edgetpu
