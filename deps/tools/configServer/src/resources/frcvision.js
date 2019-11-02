@@ -50,7 +50,7 @@ function dismissStatus() {
 // Enable and disable buttons based on connection status
 var connectedButtonIds = ['systemRestart', 'networkApproach', 'networkAddress', 'networkMask', 'networkGateway', 'networkDNS', 'visionUp', 'visionDown', 'visionTerm', 'visionKill', 'systemReadOnly', 'systemWritable', 'visionClient', 'visionTeam', 'visionDiscard', 'addConnectedCamera', 'addCamera', 'applicationType'];
 var connectedButtonClasses = ['cameraName', 'cameraPath', 'cameraAlternatePaths', 'cameraPixelFormat', 'cameraWidth', 'cameraHeight', 'cameraFps', 'cameraBrightness', 'cameraWhiteBalance', 'cameraExposure', 'cameraProperties', 'streamWidth', 'streamHeight', 'streamFps', 'streamCompression', 'streamDefaultCompression', 'cameraRemove', 'cameraCopyConfig', 'cameraKey']
-var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave'];
+var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton'];
 var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemMemoryAvail1s', 'systemMemoryAvail5s',
                        'systemCpuUser1s', 'systemCpuUser5s',
@@ -206,6 +206,13 @@ function connect() {
         $('#applicationSave').button('reset');
         updateApplicationView();
         displaySuccess('Application successfully uploaded!  See the Vision Status tab for status and console output');
+        break;
+      case 'fileUploadComplete':
+        $('#fileUploadButton').button('reset');
+        updateFileUploadView();
+        if (msg.success) {
+          displaySuccess('File successfully uploaded!');
+        }
         break;
       case 'systemReadOnly':
         displayReadOnly();
@@ -826,9 +833,68 @@ $('#applicationSave').click(function() {
   uploadFile(0);
 });
 
+var fileUploadFiles = [];
+
+function updateFileUploadView() {
+  $('#fileUploadFile').val(null);
+  fileUploadFiles = [];
+}
+
+$('#fileUploadType').change(function() {
+  updateFileUploadView();
+  dismissStatus();
+});
+
+$('#fileUploadFile').change(function() {
+  fileUploadFiles = this.files;
+  dismissStatus();
+});
+
+$('#fileUploadButton').click(function() {
+  if (fileUploadFiles.length <= 0) {
+    return;
+  }
+
+  $('#fileUploadButton').button('loading');
+
+  var msg = {
+    type: 'fileStartUpload',
+  };
+  connection.send(JSON.stringify(msg));
+
+  var reader = new FileReader();
+  var file = fileUploadFiles.item(0);
+
+  function uploadFile(start) {
+    var nextSlice = start + (64 * 1024) + 1;
+    reader.onloadend = function(e) {
+      if (e.target.readyState !== FileReader.DONE) {
+        return;
+      }
+      connection.send(e.target.result);
+      if (nextSlice < file.size) {
+        // more to go
+        uploadFile(nextSlice);
+      } else {
+        // done
+        var msg = {
+          type: 'fileFinishUpload',
+          extract: $('#fileUploadExtract').prop('checked'),
+          fileName: file.name
+        };
+        connection.send(JSON.stringify(msg));
+      }
+    }
+    reader.readAsArrayBuffer(file.slice(start, nextSlice));
+  }
+  uploadFile(0);
+});
+
+
 // Start with display disconnected and start initial connection attempt
 displayDisconnected();
 updateNetworkSettingsView();
 updateVisionSettingsView();
 updateApplicationView();
+updateFileUploadView();
 connect();

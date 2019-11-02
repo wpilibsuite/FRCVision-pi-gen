@@ -24,6 +24,7 @@
 #include "Application.h"
 #include "NetworkSettings.h"
 #include "SystemStatus.h"
+#include "UploadHelper.h"
 #include "VisionSettings.h"
 #include "VisionStatus.h"
 
@@ -32,14 +33,9 @@ namespace uv = wpi::uv;
 #define SERVICE "/service/camera"
 
 struct WebSocketData {
-  ~WebSocketData() {
-    if (uploadFd != -1) ::close(uploadFd);
-  }
-
   bool visionLogEnabled = false;
-  int uploadFd = -1;
-  bool uploadText = false;
-  char uploadFilename[128];
+
+  UploadHelper upload;
 
   wpi::sig::ScopedConnection sysStatusConn;
   wpi::sig::ScopedConnection sysWritableConn;
@@ -294,23 +290,96 @@ void ProcessWsText(wpi::WebSocket& ws, wpi::StringRef msg) {
       Application::GetInstance()->Set(appType, statusFunc);
     } else if (subType == "StartUpload") {
       auto d = ws.GetData<WebSocketData>();
-      std::strcpy(d->uploadFilename, EXEC_HOME "/appUploadXXXXXX");
-      d->uploadFd = Application::GetInstance()->StartUpload(
-          appType, d->uploadFilename, statusFunc);
-      d->uploadText = wpi::StringRef(appType).endswith("python");
+      d->upload.Open(EXEC_HOME "/appUploadXXXXXX",
+                     wpi::StringRef(appType).endswith("python"), statusFunc);
     } else if (subType == "FinishUpload") {
       auto d = ws.GetData<WebSocketData>();
-      if (d->uploadFd != -1)
-        Application::GetInstance()->FinishUpload(appType, d->uploadFd,
-                                                 d->uploadFilename, statusFunc);
-      d->uploadFd = -1;
+      if (d->upload)
+        Application::GetInstance()->FinishUpload(appType, d->upload,
+                                                 statusFunc);
       SendWsText(ws, {{"type", "applicationSaveComplete"}});
+    }
+  } else if (t.startswith("file")) {
+    wpi::StringRef subType = t.substr(4);
+    if (subType == "StartUpload") {
+      auto statusFunc = [s = ws.shared_from_this()](wpi::StringRef msg) {
+        SendWsText(*s, {{"type", "status"}, {"message", msg}});
+      };
+      auto d = ws.GetData<WebSocketData>();
+      d->upload.Open(EXEC_HOME "/fileUploadXXXXXX", false, statusFunc);
+    } else if (subType == "FinishUpload") {
+      auto d = ws.GetData<WebSocketData>();
+
+      // change ownership
+      if (fchown(d->upload.GetFD(), APP_UID, APP_GID) == -1) {
+        wpi::errs() << "could not change file ownership: "
+                    << std::strerror(errno) << '\n';
+      }
+      d->upload.Close();
+
+      bool extract;
+      try {
+        extract = j.at("extract").get<bool>();
+      } catch (const wpi::json::exception& e) {
+        wpi::errs() << "could not read extract value: " << e.what() << '\n';
+        unlink(d->upload.GetFilename());
+        return;
+      }
+
+      std::string filename;
+      try {
+        filename = j.at("fileName").get<std::string>();
+      } catch (const wpi::json::exception& e) {
+        wpi::errs() << "could not read fileName value: " << e.what() << '\n';
+        unlink(d->upload.GetFilename());
+        return;
+      }
+
+      auto extractSuccess = [](wpi::WebSocket& s) {
+        auto d = s.GetData<WebSocketData>();
+        unlink(d->upload.GetFilename());
+        SendWsText(s, {{"type", "fileUploadComplete"}, {"success", true}});
+      };
+      auto extractFailure = [](wpi::WebSocket& s) {
+        auto d = s.GetData<WebSocketData>();
+        unlink(d->upload.GetFilename());
+        wpi::errs() << "could not extract file\n";
+        SendWsText(s, {{"type", "fileUploadComplete"}});
+      };
+
+      if (extract && wpi::StringRef{filename}.endswith("tar.gz")) {
+        RunProcess(ws, extractSuccess, extractFailure, "/bin/tar",
+                   uv::Process::Uid(APP_UID), uv::Process::Gid(APP_GID),
+                   uv::Process::Cwd(EXEC_HOME), "/bin/tar", "xzf",
+                   d->upload.GetFilename());
+      } else if (extract && wpi::StringRef{filename}.endswith("zip")) {
+        d->upload.Close();
+        RunProcess(ws, extractSuccess, extractFailure, "/usr/bin/unzip",
+                   uv::Process::Uid(APP_UID), uv::Process::Gid(APP_GID),
+                   uv::Process::Cwd(EXEC_HOME), "/usr/bin/unzip",
+                   d->upload.GetFilename());
+      } else {
+        wpi::SmallString<64> pathname;
+        pathname = EXEC_HOME;
+        pathname += '/';
+        pathname += filename;
+        if (unlink(pathname.c_str()) == -1) {
+          wpi::errs() << "could not remove file: " << std::strerror(errno)
+                      << '\n';
+        }
+
+        // rename temporary file to new file
+        if (rename(d->upload.GetFilename(), pathname.c_str()) == -1) {
+          wpi::errs() << "could not rename: " << std::strerror(errno) << '\n';
+        }
+
+        SendWsText(ws, {{"type", "fileUploadComplete"}});
+      }
     }
   }
 }
 
 void ProcessWsBinary(wpi::WebSocket& ws, wpi::ArrayRef<uint8_t> msg) {
   auto d = ws.GetData<WebSocketData>();
-  if (d->uploadFd != -1)
-    Application::GetInstance()->Upload(d->uploadFd, d->uploadText, msg);
+  if (d->upload) d->upload.Write(msg);
 }

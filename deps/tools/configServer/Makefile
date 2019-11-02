@@ -23,6 +23,7 @@ OBJS= \
     src/MyHttpConnection.o \
     src/NetworkSettings.o \
     src/SystemStatus.o \
+    src/UploadHelper.o \
     src/VisionSettings.o \
     src/VisionStatus.o \
     src/WebSocketHandlers.o \

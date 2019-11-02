@@ -20,6 +20,8 @@ namespace wpi {
 class json;
 }  // namespace wpi
 
+class UploadHelper;
+
 class Application {
   struct private_init {};
 
@@ -30,10 +32,7 @@ class Application {
 
   void Set(wpi::StringRef appType, std::function<void(wpi::StringRef)> onFail);
 
-  int StartUpload(wpi::StringRef appType, char* filename,
-                  std::function<void(wpi::StringRef)> onFail);
-  void Upload(int fd, bool text, wpi::ArrayRef<uint8_t> contents);
-  void FinishUpload(wpi::StringRef appType, int fd, const char* tmpFilename,
+  void FinishUpload(wpi::StringRef appType, UploadHelper& helper,
                     std::function<void(wpi::StringRef)> onFail);
 
   void UpdateStatus();

@@ -513,6 +513,29 @@
             </div>
             <div class="card">
               <div class="card-header">
+                <h6>File Upload</h6>
+              </div>
+              <div class="card-body">
+                <form>
+                  <div class="form-group">
+                    <label for="fileUploadExtract">Extract .zip and .tar.gz files</label>
+                    <label class="switch switch-sm switch-pill switch-primary align-bottom">
+                      <input type="checkbox" class="switch-input" id="fileUploadExtract">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <input type="file" class="form-control-file" id="fileUploadFile">
+                  </div>
+                  <button id="fileUploadButton" type="button" class="btn btn-primary" data-loading-text="<i class='spin' data-feather='loader'></i> Uploading" disabled>
+                    <span data-feather="save"></span>
+                    <span id="fileUploadButtonText">Upload</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
                 <h6>Example Programs</h6>
               </div>
               <div class="card-body">

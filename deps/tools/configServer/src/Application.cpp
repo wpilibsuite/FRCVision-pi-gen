@@ -16,6 +16,7 @@
 #include <wpi/raw_istream.h>
 #include <wpi/raw_ostream.h>
 
+#include "UploadHelper.h"
 #include "VisionStatus.h"
 
 #define TYPE_TAG "### TYPE:"
@@ -87,41 +88,7 @@ void Application::Set(wpi::StringRef appType,
   UpdateStatus();
 }
 
-int Application::StartUpload(wpi::StringRef appType, char* filename,
-                             std::function<void(wpi::StringRef)> onFail) {
-  int fd = mkstemp(filename);
-  if (fd < 0) {
-    wpi::SmallString<64> msg;
-    msg = "could not open temporary file: ";
-    msg += std::strerror(errno);
-    onFail(msg);
-  }
-  return fd;
-}
-
-void Application::Upload(int fd, bool text, wpi::ArrayRef<uint8_t> contents) {
-  // write contents
-  wpi::raw_fd_ostream out(fd, false);
-  if (text) {
-    wpi::StringRef str(reinterpret_cast<const char*>(contents.data()),
-                       contents.size());
-    // convert any Windows EOL to Unix
-    for (;;) {
-      size_t idx = str.find("\r\n");
-      if (idx == wpi::StringRef::npos) break;
-      out << str.slice(0, idx) << '\n';
-      str = str.slice(idx + 2, wpi::StringRef::npos);
-    }
-    out << str;
-    // ensure file ends with EOL
-    if (!str.empty() && str.back() != '\n') out << '\n';
-  } else {
-    out << contents;
-  }
-}
-
-void Application::FinishUpload(wpi::StringRef appType, int fd,
-                               const char* tmpFilename,
+void Application::FinishUpload(wpi::StringRef appType, UploadHelper& helper,
                                std::function<void(wpi::StringRef)> onFail) {
   wpi::StringRef filename;
   if (appType == "upload-java") {
@@ -136,13 +103,14 @@ void Application::FinishUpload(wpi::StringRef appType, int fd,
     msg += appType;
     msg += "'";
     onFail(msg);
-    ::close(fd);
+    helper.Close();
     return;
   }
 
   wpi::SmallString<64> pathname;
   pathname = EXEC_HOME;
   pathname += filename;
+  int fd = helper.GetFD();
 
   // change ownership
   if (fchown(fd, APP_UID, APP_GID) == -1) {
@@ -157,7 +125,7 @@ void Application::FinishUpload(wpi::StringRef appType, int fd,
   }
 
   // close temporary file
-  ::close(fd);
+  helper.Close();
 
   // remove old file (need to do this as we can't overwrite a running exe)
   if (unlink(pathname.c_str()) == -1) {
@@ -166,7 +134,7 @@ void Application::FinishUpload(wpi::StringRef appType, int fd,
   }
 
   // rename temporary file to new file
-  if (rename(tmpFilename, pathname.c_str()) == -1) {
+  if (rename(helper.GetFilename(), pathname.c_str()) == -1) {
     wpi::errs() << "could not rename to app executable: "
                 << std::strerror(errno) << '\n';
   }
