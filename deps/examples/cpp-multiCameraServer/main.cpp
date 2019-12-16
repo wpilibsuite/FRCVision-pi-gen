@@ -304,7 +304,7 @@ int main(int argc, char* argv[]) {
         // do something with pipeline results
       });
       /* something like this for GRIP:
-      frc::VisionRunner<MyPipeline> runner(cameras[0], new grip::GripPipeline(),
+      frc::VisionRunner<grip::GripPipeline> runner(cameras[0], new grip::GripPipeline(),
                                            [&](grip::GripPipeline& pipeline) {
         ...
       });
