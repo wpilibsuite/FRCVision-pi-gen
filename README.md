@@ -14,7 +14,7 @@ To install the required dependencies for pi-gen you should run:
 
 ```bash
 apt-get install coreutils quilt parted qemu-user-static debootstrap zerofree zip \
-dosfstools bsdtar libcap2-bin grep rsync xz-utils file git curl \
+dosfstools bsdtar libcap2-bin grep rsync xz-utils file git curl bc \
 xxd build-essential cmake python3 python3-distutils ant sudo openjdk-11-jdk
 ```
 
