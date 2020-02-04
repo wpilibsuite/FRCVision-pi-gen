@@ -54,15 +54,15 @@ wget -nc -nv -O allwpilib.tar.gz \
 
 # pynetworktables
 wget -nc -nv -O pynetworktables.tar.gz \
-    https://github.com/robotpy/pynetworktables/archive/8a4288452be26e26dccad32980f46000e8d97928.tar.gz
+    https://github.com/robotpy/pynetworktables/archive/2020.0.1.tar.gz
 
 # robotpy-cscore
 wget -nc -nv -O robotpy-cscore.tar.gz \
-    https://github.com/robotpy/robotpy-cscore/archive/2019.1.0.tar.gz
+    https://github.com/robotpy/robotpy-cscore/archive/2020.0.0.tar.gz
 
 # pybind11 submodule of robotpy-cscore
 wget -nc -nv -O pybind11.tar.gz \
-    https://github.com/pybind/pybind11/archive/v2.2.tar.gz
+    https://github.com/pybind/pybind11/archive/v2.4.3.tar.gz
 
 # pixy2
 wget -nc -nv -O pixy2.tar.gz \
@@ -94,12 +94,12 @@ mv allwpilib-* allwpilib
 # pynetworktables
 tar xzf "${DOWNLOAD_DIR}/pynetworktables.tar.gz"
 mv pynetworktables-* pynetworktables
-echo "__version__ = '2019.0.1'" > pynetworktables/ntcore/version.py
+echo "__version__ = '2020.0.1'" > pynetworktables/_pynetworktables/_impl/version.py
 
 # robotpy-cscore
 tar xzf "${DOWNLOAD_DIR}/robotpy-cscore.tar.gz"
 mv robotpy-cscore-* robotpy-cscore
-echo "__version__ = '2019.1.0'" > robotpy-cscore/cscore/version.py
+echo "__version__ = '2020.0.0'" > robotpy-cscore/cscore/version.py
 pushd robotpy-cscore
 patch -p0 < "${SUB_STAGE_DIR}/files/robotpy-cscore.patch"
 rm -rf pybind11
