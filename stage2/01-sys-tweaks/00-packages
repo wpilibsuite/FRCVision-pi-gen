@@ -30,6 +30,6 @@ vl805fw
 ntfs-3g
 pciutils
 rpi-eeprom
-libedgetpu1-std
+libedgetpu1-legacy-std
 python3-edgetpu
 python3-picamera
