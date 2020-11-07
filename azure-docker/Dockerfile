@@ -1,12 +1,12 @@
-FROM debian:stretch-backports
+FROM debian:buster
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get -y update \
-    && apt-get -y install \
+RUN apt-get -y update && \
+    apt-get -y install --no-install-recommends \
         git vim parted pkg-config \
-        quilt realpath qemu-user-static debootstrap zerofree pxz zip dosfstools \
-        bsdtar libcap2-bin rsync grep udev xz-utils curl xxd file \
-        build-essential cmake python3 ant sudo openjdk-8-jdk \
-    && apt-get -y -t stretch-backports install openjdk-11-jdk \
+        quilt coreutils qemu-user-static debootstrap zerofree zip dosfstools \
+        bsdtar libcap2-bin rsync grep udev xz-utils curl xxd file kmod bc \
+        binfmt-support ca-certificates \
+        build-essential cmake python3 python3-distutils ant sudo openjdk-11-jdk \
     && rm -rf /var/lib/apt/lists/*
