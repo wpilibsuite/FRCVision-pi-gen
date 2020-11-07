@@ -141,3 +141,7 @@ install -m 755 -o 1000 -g 1000 files/runCamera "${ROOTFS_DIR}/home/${FIRST_USER_
 install -m 755 -o 1000 -g 1000 files/runInteractive "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/"
 install -m 755 -o 1000 -g 1000 files/runService "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/"
 
+#
+# Create directory needed for GradleRIO deployment
+#
+install -v -o 1000 -g 1000 -d "${ROOTFS_DIR}/usr/local/frc/third-party/lib/"
