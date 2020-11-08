@@ -1,7 +1,7 @@
-IMG_NAME='FRCVision'
-HOSTNAME=frcvision
+IMG_NAME='WPILibPi'
+TARGET_HOSTNAME=wpilibpi
 ENABLE_SSH=1
-PI_GEN=FRCVision-pi-gen
+PI_GEN=WPILib-pi-gen
 PI_GEN_REPO=https://github.com/allwpilib/FRCVision-pi-gen
 LOCALE_DEFAULT=en_US.UTF-8
 KEYBOARD_KEYMAP=us
