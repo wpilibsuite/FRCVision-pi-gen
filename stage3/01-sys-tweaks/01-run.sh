@@ -50,7 +50,7 @@ wget -nc -nv \
 
 # allwpilib
 wget -nc -nv -O allwpilib.tar.gz \
-    https://github.com/wpilibsuite/allwpilib/archive/v2020.2.2.tar.gz
+    https://github.com/wpilibsuite/allwpilib/archive/master.tar.gz
 
 # pynetworktables
 wget -nc -nv -O pynetworktables.tar.gz \
@@ -193,7 +193,9 @@ build_wpilib () {
     mkdir -p $1
     pushd $1
     cmake "${EXTRACT_DIR}/allwpilib" \
-        -DWITHOUT_ALLWPILIB=OFF \
+        -DWITH_GUI=OFF \
+        -DWITH_TESTS=OFF \
+        -DWITH_SIMULATION_MODULES=OFF \
         -DCMAKE_BUILD_TYPE=$2 \
         -DCMAKE_TOOLCHAIN_FILE=${SUB_STAGE_DIR}/files/arm-pi-gnueabihf.toolchain.cmake \
         -DCMAKE_MODULE_PATH=${SUB_STAGE_DIR}/files \
@@ -216,11 +218,14 @@ build_static_wpilib() {
     mkdir -p $1
     pushd $1
     cmake "${EXTRACT_DIR}/allwpilib" \
+        -DWITH_GUI=OFF \
+        -DWITH_TESTS=OFF \
+        -DWITH_SIMULATION_MODULES=OFF \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE=${SUB_STAGE_DIR}/files/arm-pi-gnueabihf.toolchain.cmake \
         -DCMAKE_MODULE_PATH=${SUB_STAGE_DIR}/files \
         -DOpenCV_DIR=${ROOTFS_DIR}/usr/local/frc/share/OpenCV \
-        -DWITHOUT_JAVA=ON \
+        -DWITH_JAVA=OFF \
         -DBUILD_SHARED_LIBS=OFF \
         -DTHREADS_PTHREAD_ARG=-pthread \
         -DCMAKE_INSTALL_PREFIX=/usr/local/frc-static \
