@@ -1,0 +1,6 @@
+#!/bin/sh
+cd /home/pi
+exec 2>&1
+exec pgrphack /usr/local/bin/setuidgids pi \
+    /home/pi/.nvm/versions/node/v14.15.0/bin/node \
+    /home/pi/.nvm/versions/node/v14.15.0/bin/wpilibws-romi

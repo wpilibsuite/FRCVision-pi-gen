@@ -1,0 +1,5 @@
+avrdude
+hostapd
+dnsmasq
+python-serial
+python3-serial

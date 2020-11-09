@@ -52,8 +52,9 @@ EOF
 # Set up for read-only file system
 #
 on_chroot << EOF
-rm -rf /var/lib/dhcp/ /var/run /var/spool /var/lock
+rm -rf /var/lib/dhcp/ /var/lib/misc /var/run /var/spool /var/lock
 ln -s /tmp /var/lib/dhcp
+ln -s /tmp /var/lib/misc
 ln -s /run /var/run
 ln -s /tmp /var/spool
 ln -s /tmp /var/lock

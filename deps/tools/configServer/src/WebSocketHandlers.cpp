@@ -23,6 +23,7 @@
 
 #include "Application.h"
 #include "NetworkSettings.h"
+#include "RomiStatus.h"
 #include "SystemStatus.h"
 #include "UploadHelper.h"
 #include "VisionSettings.h"
@@ -30,10 +31,11 @@
 
 namespace uv = wpi::uv;
 
-#define SERVICE "/service/camera"
+extern bool romi;
 
 struct WebSocketData {
   bool visionLogEnabled = false;
+  bool romiLogEnabled = false;
 
   UploadHelper upload;
 
@@ -41,6 +43,8 @@ struct WebSocketData {
   wpi::sig::ScopedConnection sysWritableConn;
   wpi::sig::ScopedConnection visStatusConn;
   wpi::sig::ScopedConnection visLogConn;
+  wpi::sig::ScopedConnection romiStatusConn;
+  wpi::sig::ScopedConnection romiLogConn;
   wpi::sig::ScopedConnection cameraListConn;
   wpi::sig::ScopedConnection netSettingsConn;
   wpi::sig::ScopedConnection visSettingsConn;
@@ -134,6 +138,20 @@ void InitWs(wpi::WebSocket& ws) {
   data->cameraListConn = visStatus->cameraList.connect_connection(
       [&ws](const wpi::json& j) { SendWsText(ws, j); });
   visStatus->UpdateCameraList();
+
+  // hook up romi status updates and logging
+  if (romi) {
+    SendWsText(ws, {{"type", "romiEnable"}});
+    auto romiStatus = RomiStatus::GetInstance();
+    data->romiStatusConn = romiStatus->update.connect_connection(
+        [&ws](const wpi::json& j) { SendWsText(ws, j); });
+    data->romiLogConn =
+        romiStatus->log.connect_connection([&ws](const wpi::json& j) {
+          auto d = ws.GetData<WebSocketData>();
+          if (d->romiLogEnabled) SendWsText(ws, j);
+        });
+    romiStatus->UpdateStatus();
+  }
 
   // send initial network settings
   auto netSettings = NetworkSettings::GetInstance();
@@ -243,6 +261,32 @@ void ProcessWsText(wpi::WebSocket& ws, wpi::StringRef msg) {
         return;
       }
     }
+  } else if (t.startswith("romi") && romi) {
+    wpi::StringRef subType = t.substr(4);
+
+    auto statusFunc = [s = ws.shared_from_this()](wpi::StringRef msg) {
+      SendWsText(*s, {{"type", "status"}, {"message", msg}});
+    };
+
+    if (subType == "Up") {
+      RomiStatus::GetInstance()->Up(statusFunc);
+    } else if (subType == "Down") {
+      RomiStatus::GetInstance()->Down(statusFunc);
+    } else if (subType == "Term") {
+      RomiStatus::GetInstance()->Terminate(statusFunc);
+    } else if (subType == "Kill") {
+      RomiStatus::GetInstance()->Kill(statusFunc);
+    } else if (subType == "FirmwareUpdate") {
+      RomiStatus::GetInstance()->FirmwareUpdate(statusFunc);
+    } else if (subType == "LogEnabled") {
+      try {
+        ws.GetData<WebSocketData>()->romiLogEnabled = j.at("value").get<bool>();
+      } catch (const wpi::json::exception& e) {
+        wpi::errs() << "could not read romiLogEnabled value: " << e.what()
+                    << '\n';
+        return;
+      }
+    }
   } else if (t == "networkSave") {
     auto statusFunc = [s = ws.shared_from_this()](wpi::StringRef msg) {
       SendWsText(*s, {{"type", "status"}, {"message", msg}});
@@ -261,11 +305,46 @@ void ProcessWsText(wpi::WebSocket& ws, wpi::StringRef msg) {
                     << approach << '\n';
         return;
       }
+
+      NetworkSettings::Mode wifiMode;
+      auto& wifiApproach =
+          j.at("wifiNetworkApproach").get_ref<const std::string&>();
+      if (wifiApproach == "dhcp")
+        wifiMode = NetworkSettings::kDhcp;
+      else if (wifiApproach == "static")
+        wifiMode = NetworkSettings::kStatic;
+      else if (wifiApproach == "dhcp-fallback")
+        wifiMode = NetworkSettings::kDhcpStatic;
+      else {
+        wpi::errs() << "could not understand wifiNetworkApproach value: "
+                    << wifiApproach << '\n';
+        return;
+      }
+
+      NetworkSettings::WifiMode wifiAPMode;
+      auto& wifiAPModeStr = j.at("wifiMode").get_ref<const std::string&>();
+      if (wifiAPModeStr == "bridge")
+        wifiAPMode = NetworkSettings::kBridge;
+      else if (wifiAPModeStr == "access-point")
+        wifiAPMode = NetworkSettings::kAccessPoint;
+      else {
+        wpi::errs() << "could not understand wifiMode value: "
+                    << wifiAPModeStr << '\n';
+        return;
+      }
+
       NetworkSettings::GetInstance()->Set(
           mode, j.at("networkAddress").get_ref<const std::string&>(),
           j.at("networkMask").get_ref<const std::string&>(),
           j.at("networkGateway").get_ref<const std::string&>(),
-          j.at("networkDNS").get_ref<const std::string&>(), statusFunc);
+          j.at("networkDNS").get_ref<const std::string&>(), wifiAPMode,
+          j.at("wifiChannel").get<int>(),
+          j.at("wifiSsid").get_ref<const std::string&>(),
+          j.at("wifiWpa2").get_ref<const std::string&>(), wifiMode,
+          j.at("wifiNetworkAddress").get_ref<const std::string&>(),
+          j.at("wifiNetworkMask").get_ref<const std::string&>(),
+          j.at("wifiNetworkGateway").get_ref<const std::string&>(),
+          j.at("wifiNetworkDNS").get_ref<const std::string&>(), statusFunc);
     } catch (const wpi::json::exception& e) {
       wpi::errs() << "could not read networkSave value: " << e.what() << '\n';
       return;

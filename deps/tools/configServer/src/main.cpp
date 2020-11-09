@@ -21,15 +21,22 @@
 
 #include "MyHttpConnection.h"
 #include "NetworkSettings.h"
+#include "RomiStatus.h"
 #include "SystemStatus.h"
 #include "VisionStatus.h"
 
 namespace uv = wpi::uv;
 
+bool romi = false;
 static uint64_t startTime = wpi::Now();
 
 int main(int argc, char* argv[]) {
   int port = 80;
+  if (argc >= 2 && wpi::StringRef(argv[1]) == "--romi") {
+    --argc;
+    ++argv;
+    romi = true;
+  }
   if (argc == 2) port = std::atoi(argv[1]);
 
   uv::Process::DisableStdioInheritance();
@@ -39,6 +46,7 @@ int main(int argc, char* argv[]) {
   auto loop = uv::Loop::Create();
 
   NetworkSettings::GetInstance()->SetLoop(loop);
+  if (romi) RomiStatus::GetInstance()->SetLoop(loop);
   VisionStatus::GetInstance()->SetLoop(loop);
 
   loop->error.connect(
@@ -76,6 +84,9 @@ int main(int argc, char* argv[]) {
   timer->timeout.connect([&loop] {
     SystemStatus::GetInstance()->UpdateAll();
     VisionStatus::GetInstance()->UpdateStatus();
+    if (romi) {
+      RomiStatus::GetInstance()->UpdateStatus();
+    }
   });
 
   // listen on port 6666 for console logging
@@ -86,6 +97,17 @@ int main(int argc, char* argv[]) {
       [](uv::Buffer& buf, size_t len, const sockaddr&, unsigned) {
         VisionStatus::GetInstance()->ConsoleLog(buf, len);
       });
+
+  // listen on port 7777 for romi console logging
+  if (romi) {
+    auto udpCon = uv::Udp::Create(loop);
+    udpCon->Bind("127.0.0.1", 7777, UV_UDP_REUSEADDR);
+    udpCon->StartRecv();
+    udpCon->received.connect(
+        [](uv::Buffer& buf, size_t len, const sockaddr&, unsigned) {
+          RomiStatus::GetInstance()->ConsoleLog(buf, len);
+        });
+  }
 
   // create riolog console port
   auto tcpCon = uv::Tcp::Create(loop);
