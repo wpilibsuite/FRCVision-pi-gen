@@ -31,6 +31,4 @@ ntfs-3g
 pciutils
 rpi-eeprom
 raspinfo
-libedgetpu1-legacy-std
-python3-edgetpu
 python3-picamera
