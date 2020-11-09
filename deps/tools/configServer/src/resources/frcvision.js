@@ -48,8 +48,60 @@ function dismissStatus() {
 }
 
 // Enable and disable buttons based on connection status
-var connectedButtonIds = ['systemRestart', 'networkApproach', 'networkAddress', 'networkMask', 'networkGateway', 'networkDNS', 'visionUp', 'visionDown', 'visionTerm', 'visionKill', 'systemReadOnly', 'systemWritable', 'visionClient', 'visionTeam', 'visionDiscard', 'addConnectedCamera', 'addCamera', 'applicationType'];
-var connectedButtonClasses = ['cameraName', 'cameraPath', 'cameraAlternatePaths', 'cameraPixelFormat', 'cameraWidth', 'cameraHeight', 'cameraFps', 'cameraBrightness', 'cameraWhiteBalance', 'cameraExposure', 'cameraProperties', 'streamWidth', 'streamHeight', 'streamFps', 'streamCompression', 'streamDefaultCompression', 'cameraRemove', 'cameraCopyConfig', 'cameraKey']
+var connectedButtonIds = [
+  'systemRestart',
+  'networkApproach',
+  'networkAddress',
+  'networkMask',
+  'networkGateway',
+  'networkDNS',
+  'wifiMode',
+  'wifiChannel',
+  'wifiSsid',
+  'wifiWpa2',
+  'wifiNetworkApproach',
+  'wifiNetworkAddress',
+  'wifiNetworkMask',
+  'wifiNetworkGateway',
+  'wifiNetworkDNS',
+  'romiUp',
+  'romiDown',
+  'romiTerm',
+  'romiKill',
+  'visionUp',
+  'visionDown',
+  'visionTerm',
+  'visionKill',
+  'systemReadOnly',
+  'systemWritable',
+  'visionClient',
+  'visionTeam',
+  'visionDiscard',
+  'addConnectedCamera',
+  'addCamera',
+  'applicationType'
+];
+var connectedButtonClasses = [
+  'cameraName',
+  'cameraPath',
+  'cameraAlternatePaths',
+  'cameraPixelFormat',
+  'cameraWidth',
+  'cameraHeight',
+  'cameraFps',
+  'cameraBrightness',
+  'cameraWhiteBalance',
+  'cameraExposure',
+  'cameraProperties',
+  'streamWidth',
+  'streamHeight',
+  'streamFps',
+  'streamCompression',
+  'streamDefaultCompression',
+  'cameraRemove',
+  'cameraCopyConfig',
+  'cameraKey'
+];
 var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton'];
 var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemMemoryAvail1s', 'systemMemoryAvail5s',
@@ -134,6 +186,14 @@ function pushVisionLogEnabled() {
   connection.send(JSON.stringify(msg));
 }
 
+function pushRomiLogEnabled() {
+  var msg = {
+    type: 'romiLogEnabled',
+    value: romiLogEnabled.prop('checked')
+  };
+  connection.send(JSON.stringify(msg));
+}
+
 // WebSocket automatic reconnection timer
 var reconnectTimerId = 0;
 
@@ -152,6 +212,7 @@ function connect() {
     }
     displayConnected();
     pushVisionLogEnabled();
+    pushRomiLogEnabled();
   };
   connection.onclose = function(evt) {
     displayDisconnected();
@@ -166,6 +227,10 @@ function connect() {
       return;
     }
     switch (msg.type) {
+      case 'romiEnable':
+        $('#romi-nav-item').removeAttr('style');
+        $('#wifiSettings').removeAttr('style');
+        break;
       case 'systemStatus':
         for (var i = 0; i < systemStatusIds.length; i++) {
           $('#' + systemStatusIds[i]).text(msg[systemStatusIds[i]]);
@@ -185,13 +250,47 @@ function connect() {
       case 'visionLog':
         visionLog(msg.data);
         break;
+      case 'romiStatus':
+        var elem = $('#romiServiceStatus');
+        if (msg.romiServiceStatus) {
+          elem.text(msg.romiServiceStatus);
+        }
+        if (msg.romiServiceEnabled && !elem.hasClass('badge-primary')) {
+          elem.removeClass('badge-dark').removeClass('badge-secondary').addClass('badge-primary');
+        } else if (!msg.romiServiceEnabled && !elem.hasClass('badge-secondary')) {
+          elem.removeClass('badge-dark').removeClass('badge-primary').addClass('badge-secondary');
+        }
+        break;
+      case 'romiFirmwareInterface':
+        $('#romiFirmwareUpdate').prop('disabled', !msg.exists);
+        break;
+      case 'romiFirmwareComplete':
+        $('#romiFirmwareUpdate').button('reset');
+        break;
+      case 'romiLog':
+        romiLog(msg.data);
+        break;
+      case 'romiFirmwareLog':
+        romiFirmwareLog(msg.data);
+        break;
       case 'networkSettings':
         $('#networkApproach').val(msg.networkApproach);
         $('#networkAddress').val(msg.networkAddress);
         $('#networkMask').val(msg.networkMask);
         $('#networkGateway').val(msg.networkGateway);
         $('#networkDNS').val(msg.networkDNS);
+        $('#wifiMode').val(msg.wifiMode);
+        $('#wifiChannel').val(msg.wifiChannel);
+        $('#wifiSsid').val(msg.wifiSsid);
+        $('#wifiWpa2').val(msg.wifiWpa2);
+        $('#wifiNetworkApproach').val(msg.wifiNetworkApproach);
+        $('#wifiNetworkAddress').val(msg.wifiNetworkAddress);
+        $('#wifiNetworkMask').val(msg.wifiNetworkMask);
+        $('#wifiNetworkGateway').val(msg.wifiNetworkGateway);
+        $('#wifiNetworkDNS').val(msg.wifiNetworkDNS);
         updateNetworkSettingsView();
+        updateWifiNetworkSettingsView();
+        updateWifiModeView();
         break;
       case 'visionSettings':
         visionSettingsServer = msg.settings;
@@ -271,6 +370,48 @@ $('#visionLogEnabled').change(function() {
   pushVisionLogEnabled();
 });
 
+$('#romiUp').click(function() {
+  var msg = {
+    type: 'romiUp'
+  };
+  connection.send(JSON.stringify(msg));
+});
+
+$('#romiDown').click(function() {
+  var msg = {
+    type: 'romiDown'
+  };
+  connection.send(JSON.stringify(msg));
+});
+
+$('#romiTerm').click(function() {
+  var msg = {
+    type: 'romiTerm'
+  };
+  connection.send(JSON.stringify(msg));
+});
+
+$('#romiKill').click(function() {
+  var msg = {
+    type: 'romiKill'
+  };
+  connection.send(JSON.stringify(msg));
+});
+
+$('#romiFirmwareUpdate').click(function() {
+  $('#romiFirmwareUpdate').button('loading');
+  $('#romiFirmwareConsole').removeAttr('style');
+
+  var msg = {
+    type: 'romiFirmwareUpdate'
+  };
+  connection.send(JSON.stringify(msg));
+});
+
+$('#romiLogEnabled').change(function() {
+  pushRomiLogEnabled();
+});
+
 //
 // Vision console output
 //
@@ -322,6 +463,76 @@ function visionLog(data) {
   }
 }
 
+//
+// Romi console output
+//
+var romiConsole = document.getElementById('romiConsole');
+var romiLogEnabled = $('#romiLogEnabled');
+var _linesLimit = 100;
+
+function romiLog(data) {
+  if (!romiLogEnabled.prop('checked')) {
+    return;
+  }
+  var wasScrolledBottom = (romiConsole.scrollTop === (romiConsole.scrollHeight - romiConsole.offsetHeight));
+  var div = document.createElement('div');
+  var p = document.createElement('p');
+  p.className = 'inner-line';
+
+  // escape HTML tags
+  data = escapeHtml(data);
+  p.innerHTML = data;
+
+  div.className = 'line';
+  div.addEventListener('click', function click() {
+    if (this.className.indexOf('selected') === -1) {
+      this.className = 'line-selected';
+    } else {
+      this.className = 'line';
+    }
+  });
+
+  div.appendChild(p);
+  romiConsole.appendChild(div);
+
+  if (romiConsole.children.length > _linesLimit) {
+    romiConsole.removeChild(romiConsole.children[0]);
+  }
+
+  if (wasScrolledBottom) {
+    romiConsole.scrollTop = romiConsole.scrollHeight;
+  }
+}
+
+var romiFirmwareConsole = document.getElementById('romiFirmwareConsole');
+
+function romiFirmwareLog(data) {
+  var wasScrolledBottom = (romiFirmwareConsole.scrollTop === (romiFirmwareConsole.scrollHeight - romiFirmwareConsole.offsetHeight));
+  var div = document.createElement('div');
+  var p = document.createElement('p');
+  p.className = 'inner-line';
+
+  // escape HTML tags
+  data = escapeHtml(data);
+  p.innerHTML = data;
+
+  div.className = 'line';
+  div.addEventListener('click', function click() {
+    if (this.className.indexOf('selected') === -1) {
+      this.className = 'line-selected';
+    } else {
+      this.className = 'line';
+    }
+  });
+
+  div.appendChild(p);
+  romiFirmwareConsole.appendChild(div);
+
+  if (wasScrolledBottom) {
+    romiFirmwareConsole.scrollTop = romiFirmwareConsole.scrollHeight;
+  }
+}
+
 // Show details when appropriate for network approach
 function updateNetworkSettingsView() {
   if ($('#networkApproach').val() === "dhcp") {
@@ -335,6 +546,34 @@ $('#networkApproach').change(function() {
   updateNetworkSettingsView();
 });
 
+// Show details when appropriate for wifi network approach
+function updateWifiNetworkSettingsView() {
+  if ($('#wifiNetworkApproach').val() === "dhcp") {
+    $('#wifiNetworkIpDetails').collapse('hide');
+  } else {
+    $('#wifiNetworkIpDetails').collapse('show');
+  }
+}
+
+$('#wifiNetworkApproach').change(function() {
+  updateWifiNetworkSettingsView();
+});
+
+// Show details when appropriate for wifi mode
+function updateWifiModeView() {
+  if ($('#wifiMode').val() === "bridge") {
+    $('#wifiAccessPointDetails').collapse('hide');
+  } else {
+    $('#wifiAccessPointDetails').collapse('show');
+    $('#wifiNetworkApproach').val('static');
+    updateWifiNetworkSettingsView();
+  }
+}
+
+$('#wifiMode').change(function() {
+  updateWifiModeView();
+});
+
 // Network Save button handler
 $('#networkSave').click(function() {
   var msg = {
@@ -343,7 +582,16 @@ $('#networkSave').click(function() {
     networkAddress: $('#networkAddress').val(),
     networkMask: $('#networkMask').val(),
     networkGateway: $('#networkGateway').val(),
-    networkDNS: $('#networkDNS').val()
+    networkDNS: $('#networkDNS').val(),
+    wifiMode: $('#wifiMode').val(),
+    wifiChannel: parseInt($('#wifiChannel').val()),
+    wifiSsid: $('#wifiSsid').val(),
+    wifiWpa2: $('#wifiWpa2').val(),
+    wifiNetworkApproach: $('#wifiNetworkApproach').val(),
+    wifiNetworkAddress: $('#wifiNetworkAddress').val(),
+    wifiNetworkMask: $('#wifiNetworkMask').val(),
+    wifiNetworkGateway: $('#wifiNetworkGateway').val(),
+    wifiNetworkDNS: $('#wifiNetworkDNS').val()
   };
   connection.send(JSON.stringify(msg));
 });
@@ -894,6 +1142,8 @@ $('#fileUploadButton').click(function() {
 // Start with display disconnected and start initial connection attempt
 displayDisconnected();
 updateNetworkSettingsView();
+updateWifiNetworkSettingsView();
+updateWifiModeView();
 updateVisionSettingsView();
 updateApplicationView();
 updateFileUploadView();

@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="frcvision.css">
     <link rel="icon" type="image/png" sizes="128x128" href="wpilib.png">
 
-    <title>WPILib FRCVision Raspberry PI Configuration</title>
+    <title>WPILib Raspberry PI Configuration</title>
   </head>
   <body class="app header-fixed sidebar-md-show sidebar-fixed">
     <header class="app-header navbar">
       <a class="navbar-brand" href="#">
         <img src="wpilib.png" class="img-fluid ml-2 mr-2 brand-icon" alt="WPILib">
-        FRCVision-rPi
+        WPILibPi
       </a>
       <form class="form-inline">
         <div class="btn-group" role="group">
@@ -36,6 +36,12 @@
               <a class="nav-link active" id="system-status-tab" data-toggle="tab" href="#system-status">
                 <i class="nav-icon" data-feather="info"></i>
                 System Status
+              </a>
+            </li>
+            <li class="nav-item" style="display:none" id="romi-nav-item">
+              <a class="nav-link" id="romi-tab" data-toggle="tab" href="#romi">
+                <i class="nav-icon" data-feather="life-buoy"></i>
+                Romi
               </a>
             </li>
             <li class="nav-item">
@@ -124,6 +130,86 @@
             </button>
           </div>
 
+          <!-- Romi -->
+          <div class="tab-pane" id="romi" role="tabpanel" aria-labelledby="romi-tab">
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col-auto mr-auto">
+                    <h6>Background Service (Automatic Restart)</h6>
+                  </div>
+                  <div class="col-auto">
+                    <span class="badge badge-dark align-top" id="romiServiceStatus">Unknown Status</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <button type="button" class="btn btn-sm btn-primary" id="romiUp">
+                  <span data-feather="play-circle"></span>
+                  Up
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="romiDown">
+                  <span data-feather="stop-circle"></span>
+                  Down
+                </button>
+                <button type="button" class="btn btn-sm btn-warning" id="romiTerm">
+                  <span data-feather="slash"></span>
+                  Terminate
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" id="romiKill">
+                  <span data-feather="x"></span>
+                  Kill
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col-auto mr-auto">
+                    <h6>Firmware</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-text">
+                  To start firmware imaging, first connect the Romi's micro
+                  USB-B port to one of the Pi's USB-A ports.  A USB data cable
+                  is required (many phone charging cables are power only).
+                  Connecting this cable can cause the Romi or Pi to reset, so
+                  it's recommended this be done when the Romi is powered off.
+                </p>
+                <p class="card-text">
+                  Do not cut power to the Romi while firmware update is in progress!
+                </p>
+                <button type="button" class="btn btn-primary" id="romiFirmwareUpdate" data-loading-text="<i class='spin' data-feather='loader'></i> Updating" disabled="true">
+                  Update Firmware
+                </button>
+                <pre class="log" id="romiFirmwareConsole" style="display:none"></pre>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col-auto mr-auto">
+                    <h6>Console Output</h6>
+                  </div>
+                  <div class="col-auto">
+                    <label for="romiLogEnabled">
+                      Enable
+                    </label>
+                    <label class="switch switch-sm switch-pill switch-primary align-bottom">
+                      <input type="checkbox" class="switch-input" id="romiLogEnabled">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <pre class="log" id="romiConsole"></pre>
+              </div>
+            </div>
+          </div>
+
           <!-- Vision Status -->
           <div class="tab-pane" id="vision-status" role="tabpanel" aria-labelledby="vision-status-tab">
             <div class="card">
@@ -183,7 +269,7 @@
           <div class="tab-pane" id="network-settings" role="tabpanel" aria-labelledby="network-settings-tab">
             <form>
               <div class="form-group">
-                <label for="networkApproach">Configure IPv4 Address</label>
+                <label for="networkApproach">Ethernet Address</label>
                 <select class="form-control" id="networkApproach">
                   <option value="dhcp">DHCP</option>
                   <option value="static">Static</option>
@@ -206,6 +292,65 @@
                 <div class="form-group">
                   <label for="networkDNS">DNS Server</label>
                   <input type=text" class="form-control" id="networkDNS">
+                </div>
+              </div>
+              <div style="display:none" id="wifiSettings">
+                <div class="form-group">
+                  <label for="wifiMode">WiFi Mode</label>
+                  <select class="form-control" id="wifiMode">
+                    <option value="bridge">Bridge</option>
+                    <option value="access-point">Access Point</option>
+                  </select>
+                </div>
+                <div class="collapse" id="wifiAccessPointDetails">
+                  <div class="form-group">
+                    <label for="wifiChannel">WiFi Channel</label>
+                    <select class="form-control" id="wifiChannel">
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                      <option value="7">7</option>
+                      <option value="8">8</option>
+                      <option value="9">9</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="wifiSsid">SSID</label>
+                  <input type=text" class="form-control" id="wifiSsid">
+                </div>
+                <div class="form-group">
+                  <label for="wifiWpa2">WPA2 Passphrase</label>
+                  <input type=text" class="form-control" id="wifiWpa2">
+                </div>
+                <div class="form-group">
+                  <label for="wifiNetworkApproach">WiFi Address</label>
+                  <select class="form-control" id="wifiNetworkApproach">
+                    <option value="dhcp">DHCP</option>
+                    <option value="static">Static</option>
+                    <option value="dhcp-fallback">DHCP with Static Fallback</option>
+                  </select>
+                </div>
+                <div class="collapse" id="wifiNetworkIpDetails">
+                  <div class="form-group">
+                    <label for="wifiNetworkAddress">IPv4 Address</label>
+                    <input type=text" class="form-control" id="wifiNetworkAddress">
+                  </div>
+                  <div class="form-group">
+                    <label for="wifiNetworkMask">Subnet Mask</label>
+                    <input type=text" class="form-control" id="wifiNetworkMask">
+                  </div>
+                  <div class="form-group">
+                    <label for="wifiNetworkGateway">Gateway</label>
+                    <input type=text" class="form-control" id="wifiNetworkGateway">
+                  </div>
+                  <div class="form-group">
+                    <label for="wifiNetworkDNS">DNS Server</label>
+                    <input type=text" class="form-control" id="wifiNetworkDNS">
+                  </div>
                 </div>
               </div>
               <button id="networkSave" type="button" class="btn btn-primary" data-loading-text="<i class='spin' data-feather='loader'></i> Saving" disabled>
@@ -567,8 +712,8 @@
     </div>
     <footer class="app-footer">
       <div>
-        <a href="http://wpilib.screenstepslive.com/s/currentCS/m/85074/l/1027798-the-raspberry-pi-frc-console" target="_new">FRCVision-rPi</a>
-        <span>&copy; 2019 FIRST</span>
+        <a href="http://wpilib.screenstepslive.com/s/currentCS/m/85074/l/1027798-the-raspberry-pi-frc-console" target="_new">WPILibPi</a>
+        <span>&copy; 2020 FIRST</span>
       </div>
       <div class="ml-auto">
         <a href="https://github.com/wpilibsuite/FRCVision-pi-gen/releases" target="_new">IMG_VERSION</a>

@@ -31,10 +31,14 @@ class NetworkSettings {
     m_loop = std::move(loop);
   }
 
+  enum WifiMode { kBridge, kAccessPoint };
   enum Mode { kDhcp, kStatic, kDhcpStatic };
 
   void Set(Mode mode, wpi::StringRef address, wpi::StringRef mask,
-           wpi::StringRef gateway, wpi::StringRef dns,
+           wpi::StringRef gateway, wpi::StringRef dns, WifiMode wifiAPMode,
+           int wifiChannel, wpi::StringRef wifiSsid, wpi::StringRef wifiWpa2,
+           Mode wifiMode, wpi::StringRef wifiAddress, wpi::StringRef wifiMask,
+           wpi::StringRef wifiGateway, wpi::StringRef wifiDns,
            std::function<void(wpi::StringRef)> onFail);
 
   void UpdateStatus();
