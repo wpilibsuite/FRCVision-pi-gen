@@ -42,7 +42,7 @@ pushd ${DOWNLOAD_DIR}
 
 # raspbian toolchain
 wget -nc -nv \
-    https://github.com/wpilibsuite/raspbian-toolchain/releases/download/v2.1.0/Raspbian10-Linux-Toolchain-8.3.0.tar.gz
+    https://github.com/wpilibsuite/raspbian-toolchain/releases/download/v2.1.0/Raspbian10-Linux-i386-Toolchain-8.3.0.tar.gz
 
 # opencv sources
 wget -nc -nv \
@@ -122,7 +122,7 @@ popd
 
 # extract raspbian toolchain
 pushd ${WORK_DIR}
-tar xzf ${DOWNLOAD_DIR}/Raspbian10-Linux-Toolchain-*.tar.gz
+tar xzf ${DOWNLOAD_DIR}/Raspbian10-Linux-i386-Toolchain-*.tar.gz
 export PATH=${WORK_DIR}/raspbian10/bin:${PATH}
 popd
 
