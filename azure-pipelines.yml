@@ -2,18 +2,20 @@ resources:
   containers:
   - container: pi-gen
     image: wpilib/pi-gen:latest
-    options: --privileged
+    options: --privileged --cap-add=MKNOD
 
 jobs:
  - job: 'Main'
-   pool:
-     vmImage: 'Ubuntu 16.04'
-
+   pool: RoboRioConnections
+   workspace:
+      clean: false # Clean fails because the agent cannot remove files created by root
    timeoutInMinutes: 0
-
    container: pi-gen
 
    steps:
+      - script: |
+          sudo rm -rf $(Build.SourcesDirectory) $(Build.BinariesDirectory)
+        displayName: 'Clean Workspace'
       - checkout: self
         submodules: true
       - script: |
