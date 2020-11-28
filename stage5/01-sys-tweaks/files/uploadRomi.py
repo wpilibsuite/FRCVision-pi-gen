@@ -19,7 +19,7 @@ def main(argv):
 
     # Set Defaults
     usbport = '/dev/ttyACM0'
-    hexfile = '$NVM_BIN/../lib/node_modules/wpilib-ws-robot-romi/firmware/.pio/build/a-star32U4/firmware.hex'
+    hexfile = '$NVM_BIN/../lib/node_modules/@wpilib/wpilib-ws-robot-romi/firmware/.pio/build/a-star32U4/firmware.hex'
 
     for opt, arg in opts:
         if opt == "-h":
