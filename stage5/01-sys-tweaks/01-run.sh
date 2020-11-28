@@ -11,6 +11,8 @@ install -v -d "${ROOTFS_DIR}/usr/src/wpilib-ws-romi/scripts"
 install -m 755 files/uploadRomi.py "${ROOTFS_DIR}/usr/src/wpilib-ws-romi/scripts/"
 sed -i -e "s,\\\$NVM_BIN,/home/${FIRST_USER_NAME}/.nvm/versions/node/v14.15.0/bin," "${ROOTFS_DIR}/usr/src/wpilib-ws-romi/scripts/uploadRomi.py"
 
+install -m 644 files/romi.json "${ROOTFS_DIR}/boot/"
+
 # Install NVM and Romi package
 on_chroot << EOF
 export HOME="/home/${FIRST_USER_NAME}"
@@ -22,7 +24,7 @@ source "/home/${FIRST_USER_NAME}/.nvm/nvm.sh"
 
 nvm install 14.15.0
 
-npm --unsafe-perm --user=1000 --group=1000 install -g wpilib-ws-robot-romi
+npm --unsafe-perm --user=1000 --group=1000 install -g @wpilib/wpilib-ws-robot-romi
 npm --unsafe-perm --user=1000 --group=1000 install -g i2c-bus
 EOF
 

@@ -1,0 +1,3 @@
+{
+    "ioConfig": ["dio", "ain", "ain", "pwm", "pwm"]
+}
