@@ -15,6 +15,9 @@
 
 #include <cstring>
 
+#include <wpi/FileSystem.h>
+#include <wpi/raw_istream.h>
+#include <wpi/raw_ostream.h>
 #include <wpi/SmallString.h>
 #include <wpi/StringRef.h>
 #include <wpi/json.h>
@@ -29,6 +32,12 @@
 namespace uv = wpi::uv;
 
 #define SERVICE "/service/wpilibws-romi"
+
+#ifdef __RASPBIAN__
+static const char* configFile = "/boot/romi.json";
+#else
+static const char* configFile = "romi.json";
+#endif
 
 std::shared_ptr<RomiStatus> RomiStatus::GetInstance() {
   static auto status = std::make_shared<RomiStatus>(private_init{});
@@ -225,4 +234,57 @@ void RomiStatus::FirmwareUpdate(std::function<void(wpi::StringRef)> onFail) {
   } else {
     onFail("could not spawn process");
   }
+}
+
+void RomiStatus::UpdateIoConfig(std::function<void(wpi::StringRef)> onFail) {
+  ioConfig(GetIoConfigJson(onFail));
+}
+
+wpi::json RomiStatus::GetIoConfigJson(std::function<void(wpi::StringRef)> onFail) {
+  // Read config file
+  std::error_code ec;
+  wpi::raw_fd_istream is(configFile, ec);
+
+  if (ec) {
+    onFail("Could not read romi config file");
+    wpi::errs() << "could not read " << configFile << "\n";
+    wpi::json();
+  }
+
+  wpi::json j;
+  try {
+    j = wpi::json::parse(is);
+  } catch(const wpi::json::parse_error& e) {
+    onFail("Parse error in config file");
+    wpi::errs() << "Parse error in " << configFile << ": byte "
+                << e.byte <<": " << e.what() << "\n";
+    return wpi::json();
+  }
+
+  if (!j.is_object()) {
+    onFail("Top level must be a JSON object");
+    wpi::errs() << "must be a JSON object\n";
+    return wpi::json();
+  }
+
+  return {{"type", "romiExternalIOConfig"},
+          {"romiConfig", j}};
+}
+
+void RomiStatus::SaveConfig(const wpi::json& data, std::function<void(wpi::StringRef)> onFail) {
+  {
+    // write file
+    std::error_code ec;
+    wpi::raw_fd_ostream os(configFile, ec, wpi::sys::fs::F_Text);
+    if (ec) {
+      onFail("could not write to romi config");
+      return;
+    }
+    data.dump(os, 4);
+    os << "\n";
+  }
+
+  // Terminate Romi process so it reloads the file
+  Terminate(onFail);
+  UpdateIoConfig(onFail);
 }

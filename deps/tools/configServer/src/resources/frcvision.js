@@ -68,6 +68,11 @@ var connectedButtonIds = [
   'romiDown',
   'romiTerm',
   'romiKill',
+  'romiExtIO0',
+  'romiExtIO1',
+  'romiExtIO2',
+  'romiExtIO3',
+  'romiExtIO4',
   'visionUp',
   'visionDown',
   'visionTerm',
@@ -102,7 +107,7 @@ var connectedButtonClasses = [
   'cameraCopyConfig',
   'cameraKey'
 ];
-var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton'];
+var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton', 'romiSaveExternalIOConfig'];
 var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemMemoryAvail1s', 'systemMemoryAvail5s',
                        'systemCpuUser1s', 'systemCpuUser5s',
@@ -194,6 +199,31 @@ function pushRomiLogEnabled() {
   connection.send(JSON.stringify(msg));
 }
 
+function updateRomiRobotPorts() {
+  // Starting channel numbers
+  var digitalChannel = 8;
+  var analogChannel = 0;
+  var pwmChannel = 2;
+
+  for (var i = 0; i < 5; i++) {
+    var chType = $("#romiExtIO" + i).val();
+    switch (chType) {
+      case "dio":
+        $("#romiRobotPort" + i).html("Digital " + digitalChannel);
+        digitalChannel++;
+        break;
+      case "ain":
+        $("#romiRobotPort" + i).html("Analog In " + analogChannel);
+        analogChannel++;
+        break;
+      case "pwm":
+        $("#romiRobotPort" + i).html("PWM " + pwmChannel);
+        pwmChannel++;
+        break;
+    }
+  }
+}
+
 // WebSocket automatic reconnection timer
 var reconnectTimerId = 0;
 
@@ -226,6 +256,7 @@ function connect() {
     if (msg === null) {
       return;
     }
+
     switch (msg.type) {
       case 'romiEnable':
         $('#romi-nav-item').removeAttr('style');
@@ -272,6 +303,15 @@ function connect() {
         break;
       case 'romiFirmwareLog':
         romiFirmwareLog(msg.data);
+        break;
+      case 'romiExternalIOConfig':
+        // Pre-fill the IO config dropdowns
+        if (msg.romiConfig && msg.romiConfig.ioConfig) {
+          for (var i = 0; i < msg.romiConfig.ioConfig.length; i++) {
+            $('#romiExtIO' + i).val(msg.romiConfig.ioConfig[i]);
+          }
+          updateRomiRobotPorts();
+        }
         break;
       case 'networkSettings':
         $('#networkApproach').val(msg.networkApproach);
@@ -411,6 +451,60 @@ $('#romiFirmwareUpdate').click(function() {
 $('#romiLogEnabled').change(function() {
   pushRomiLogEnabled();
 });
+
+$('#romiSaveExternalIOConfig').click(function() {
+  var ioConfig = [];
+
+  for (var i = 0; i < 5; i++) {
+    ioConfig.push($('#romiExtIO' + i).val());
+  }
+
+  var msg = {
+    type: 'romiSaveExternalIOConfig',
+    romiConfig: {
+      ioConfig: ioConfig
+    }
+  };
+  connection.send(JSON.stringify(msg));
+});
+
+// Set up the Romi status query
+setInterval(function() {
+  var baseUrl = "http://" + window.location.hostname + ":9001";
+  fetch(baseUrl + "/status")
+  .then(function(response) { return response.json(); })
+  .then(function(status) {
+    if (status["service-version"]) {
+      $("#romiServiceVersion").html(status["service-version"].serviceVersion);
+    }
+    else {
+      $("#romiServiceVersion").html("---");
+    }
+
+    if (status["firmware-status"]) {
+      var firmwareCompatString = status["firmware-status"].firmwareMatch ?
+                                    "<span class='font-weight-bold text-success'>Yes</span>" :
+                                    "<span class='font-weight-bold text-danger'>No</span>";
+      $("#romiFirmwareCompatible").html(firmwareCompatString);
+    }
+    else {
+      $("#romiFirmwareCompatible").html("---");
+    }
+
+    if (status["battery-status"]) {
+      $("#romiBatteryVoltage").html(status["battery-status"].voltage.toFixed(2));
+    }
+    else {
+      $("#romiBatteryVoltage").html("---");
+    }
+  })
+  .catch(function (err) {
+    $("#romiServiceVersion").html("---");
+    $("#romiFirmwareCompatible").html("---");
+    $("#romiBatteryVoltage").html("---");
+  });
+
+}, 2000);
 
 //
 // Vision console output

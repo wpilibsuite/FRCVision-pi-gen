@@ -166,6 +166,123 @@
               <div class="card-header">
                 <div class="row align-items-center">
                   <div class="col-auto mr-auto">
+                    <h6>Romi Status</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col" style="width: 25%;"></th>
+                      <th scope="col" style="width: 75%;">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Romi Service Version</th>
+                      <td id="romiServiceVersion">---</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Firmware Compatible</th>
+                      <td id="romiFirmwareCompatible">---</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Battery Voltage</th>
+                      <td id="romiBatteryVoltage">---</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col-auto mr-auto">
+                    <h6>External IO Configuration</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-text">
+                  Each of the 5 external pins can be configured to perform one of three
+                  functions: DIO, Analog In or PWM (EXT 0 can only be set to DIO or PWM).
+                </p>
+                <p class="card-text">
+                  After saving the IO configuration, the <i>Robot Port</i> section will
+                  update with the appropriate channels to use in robot code.
+                </p>
+                <div class="text-center">
+                  <img src="romi_ext_io.png" alt="Romi External IO Pin Layout">
+                </div>
+                <p class="card-text"></p>
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <td scope="row"><b>Romi Pin</b></td>
+                      <td>EXT 0</td>
+                      <td>EXT 1</td>
+                      <td>EXT 2</td>
+                      <td>EXT 3</td>
+                      <td>EXT 4</td>
+                    </tr>
+                    <tr>
+                      <td scope="row"><b>Setting</b></td>
+                      <td>
+                        <select class="form-control" id="romiExtIO0">
+                          <option value="dio">DIO</option>
+                          <option value="pwm">PWM</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select class="form-control" id="romiExtIO1">
+                          <option value="dio">DIO</option>
+                          <option value="ain">Analog In</option>
+                          <option value="pwm">PWM</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select class="form-control" id="romiExtIO2">
+                          <option value="dio">DIO</option>
+                          <option value="ain">Analog In</option>
+                          <option value="pwm">PWM</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select class="form-control" id="romiExtIO3">
+                          <option value="dio">DIO</option>
+                          <option value="ain">Analog In</option>
+                          <option value="pwm">PWM</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select class="form-control" id="romiExtIO4">
+                          <option value="dio">DIO</option>
+                          <option value="ain">Analog In</option>
+                          <option value="pwm">PWM</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td scope="row"><b>Robot Port</b></td>
+                      <td><span id="romiRobotPort0">VAL</span></td>
+                      <td><span id="romiRobotPort1">VAL</span></td>
+                      <td><span id="romiRobotPort2">VAL</span></td>
+                      <td><span id="romiRobotPort3">VAL</span></td>
+                      <td><span id="romiRobotPort4">VAL</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="card-text"></p>
+                  <button type="button" class="btn btn-primary" id="romiSaveExternalIOConfig">
+                    Save External IO Configuration
+                  </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col-auto mr-auto">
                     <h6>Firmware</h6>
                   </div>
                 </div>

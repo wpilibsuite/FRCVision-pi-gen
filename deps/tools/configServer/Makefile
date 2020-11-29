@@ -38,7 +38,8 @@ OBJS= \
     src/WebSocketHandlers.o \
     src/resources/index.html.o \
     src/resources/frcvision.css.o \
-    src/resources/frcvision.js.o
+    src/resources/frcvision.js.o \
+    src/resources/romi_ext_io.png.o
 
 configServer: ${OBJS}
 	${CXX} -pthread -g -o $@ ${CXXFLAGS} $^ ${DEPS_LIBS}
@@ -66,3 +67,5 @@ configServer: ${OBJS}
 %.js.cpp: %.js
 	env IMG_VERSION=${IMG_VERSION} ./gen_resource.py $@ $<
 
+%.png.cpp: %.png
+	env IMG_VERSION=${IMG_VERSION} ./gen_resource.py $@ $<
