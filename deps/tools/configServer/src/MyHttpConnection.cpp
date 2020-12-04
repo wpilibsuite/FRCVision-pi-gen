@@ -36,6 +36,7 @@ StringRef GetResource_wpilib_128_png();
 wpi::StringRef GetResource_frcvision_css();
 wpi::StringRef GetResource_frcvision_js();
 wpi::StringRef GetResource_index_html();
+wpi::StringRef GetResource_romi_ext_io_png();
 
 MyHttpConnection::MyHttpConnection(std::shared_ptr<wpi::uv::Stream> stream)
     : HttpServerConnection(stream), m_websocketHelper(m_request) {
@@ -221,6 +222,9 @@ void MyHttpConnection::ProcessRequest() {
   } else if (isGET && path.equals("/wpilib.png")) {
     SendStaticResponse(200, "OK", "image/png",
                        wpi::GetResource_wpilib_128_png(), false);
+  } else if (isGET && path.equals("/romi_ext_io.png")) {
+    SendStaticResponse(200, "OK", "image/png",
+                       GetResource_romi_ext_io_png(), false);
   } else if (isGET && path.startswith("/") && path.endswith(".zip") &&
              !path.contains("..")) {
     SendFileResponse(200, "OK", "application/zip", wpi::Twine(ZIPS_DIR) + path);
