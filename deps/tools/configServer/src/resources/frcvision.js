@@ -107,7 +107,7 @@ var connectedButtonClasses = [
   'cameraCopyConfig',
   'cameraKey'
 ];
-var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton', 'romiSaveExternalIOConfig'];
+var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton', 'romiSaveExternalIOConfig', 'romiServiceUploadButton'];
 var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemMemoryAvail1s', 'systemMemoryAvail5s',
                        'systemCpuUser1s', 'systemCpuUser5s',
@@ -313,6 +313,13 @@ function connect() {
           updateRomiRobotPorts();
         }
         break;
+      case 'romiServiceUploadComplete':
+        $('#romiServiceUploadButton').button('reset');
+        updateRomiServiceUploadView();
+        if (msg.success) {
+          displaySuccess('Romi WebService successfully uploaded!');
+        }
+      break;
       case 'networkSettings':
         $('#networkApproach').val(msg.networkApproach);
         $('#networkAddress').val(msg.networkAddress);
@@ -1232,6 +1239,58 @@ $('#fileUploadButton').click(function() {
   uploadFile(0);
 });
 
+// Romi Service upload
+var romiServiceUploadFiles = [];
+
+function updateRomiServiceUploadView() {
+  $('#romiServiceUploadFile').val(null);
+  fileUploadFiles = [];
+}
+
+$('#romiServiceUploadFile').change(function() {
+  romiServiceUploadFiles = this.files;
+  dismissStatus();
+});
+
+$('#romiServiceUploadButton').click(function() {
+  if (romiServiceUploadFiles.length <= 0) {
+    return;
+  }
+
+  $('#romiServiceUploadButton').button('loading');
+
+  var msg = {
+    type: 'romiServiceStartUpload',
+  };
+  connection.send(JSON.stringify(msg));
+
+  var reader = new FileReader();
+  var file = romiServiceUploadFiles.item(0);
+
+  function uploadFile(start) {
+    var nextSlice = start + (64 * 1024) + 1;
+    reader.onloadend = function(e) {
+      if (e.target.readyState !== FileReader.DONE) {
+        return;
+      }
+      connection.send(e.target.result);
+      if (nextSlice < file.size) {
+        // more to go
+        uploadFile(nextSlice);
+      } else {
+        // done
+        var msg = {
+          type: 'romiServiceFinishUpload',
+          fileName: file.name
+        };
+        connection.send(JSON.stringify(msg));
+      }
+    }
+    reader.readAsArrayBuffer(file.slice(start, nextSlice));
+  }
+  uploadFile(0);
+});
+
 
 // Start with display disconnected and start initial connection attempt
 displayDisconnected();
@@ -1241,4 +1300,5 @@ updateWifiModeView();
 updateVisionSettingsView();
 updateApplicationView();
 updateFileUploadView();
+updateRomiServiceUploadView();
 connect();

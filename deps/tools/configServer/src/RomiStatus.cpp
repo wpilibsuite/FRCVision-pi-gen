@@ -33,12 +33,6 @@ namespace uv = wpi::uv;
 
 #define SERVICE "/service/wpilibws-romi"
 
-#ifdef __RASPBIAN__
-static const char* configFile = "/boot/romi.json";
-#else
-static const char* configFile = "romi.json";
-#endif
-
 std::shared_ptr<RomiStatus> RomiStatus::GetInstance() {
   static auto status = std::make_shared<RomiStatus>(private_init{});
   return status;
@@ -243,11 +237,11 @@ void RomiStatus::UpdateIoConfig(std::function<void(wpi::StringRef)> onFail) {
 wpi::json RomiStatus::GetIoConfigJson(std::function<void(wpi::StringRef)> onFail) {
   // Read config file
   std::error_code ec;
-  wpi::raw_fd_istream is(configFile, ec);
+  wpi::raw_fd_istream is(ROMI_JSON, ec);
 
   if (ec) {
     onFail("Could not read romi config file");
-    wpi::errs() << "could not read " << configFile << "\n";
+    wpi::errs() << "could not read " << ROMI_JSON << "\n";
     wpi::json();
   }
 
@@ -256,7 +250,7 @@ wpi::json RomiStatus::GetIoConfigJson(std::function<void(wpi::StringRef)> onFail
     j = wpi::json::parse(is);
   } catch(const wpi::json::parse_error& e) {
     onFail("Parse error in config file");
-    wpi::errs() << "Parse error in " << configFile << ": byte "
+    wpi::errs() << "Parse error in " << ROMI_JSON << ": byte "
                 << e.byte <<": " << e.what() << "\n";
     return wpi::json();
   }
@@ -275,7 +269,7 @@ void RomiStatus::SaveConfig(const wpi::json& data, std::function<void(wpi::Strin
   {
     // write file
     std::error_code ec;
-    wpi::raw_fd_ostream os(configFile, ec, wpi::sys::fs::F_Text);
+    wpi::raw_fd_ostream os(ROMI_JSON, ec, wpi::sys::fs::F_Text);
     if (ec) {
       onFail("could not write to romi config");
       return;

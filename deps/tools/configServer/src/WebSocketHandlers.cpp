@@ -297,6 +297,68 @@ void ProcessWsText(wpi::WebSocket& ws, wpi::StringRef msg) {
         wpi::errs() << "could not read romiConfig value: " << e.what() << "\n";
         return;
       }
+    } else if (subType == "ServiceStartUpload") {
+      auto statusFunc = [s = ws.shared_from_this()](wpi::StringRef msg) {
+        SendWsText(*s, {{"type", "status"}, {"message", msg}});
+      };
+      auto d = ws.GetData<WebSocketData>();
+      d->upload.Open(EXEC_HOME "/romiUploadXXXXXX", false, statusFunc);
+    }
+    else if (subType == "ServiceFinishUpload") {
+      auto d = ws.GetData<WebSocketData>();
+
+      if (fchown(d->upload.GetFD(), APP_UID, APP_GID) == -1) {
+        wpi::errs() << "could not change file ownership: "
+                    << std::strerror(errno) << "\n";
+      }
+      d->upload.Close();
+
+      std::string filename;
+      try {
+        filename = j.at("fileName").get<std::string>();
+      } catch (const wpi::json::exception& e) {
+        wpi::errs() << "could not read fileName value: " << e.what() << "\n";
+        unlink(d->upload.GetFilename());
+        return;
+      }
+
+      wpi::SmallString<64> pathname;
+      pathname = EXEC_HOME;
+      pathname += '/';
+      pathname += filename;
+      if (unlink(pathname.c_str()) == -1) {
+        wpi::errs() << "could not remove file: " << std::strerror(errno)
+                    << "\n";
+      }
+
+      // Rename temporary file to new file
+      if (rename(d->upload.GetFilename(), pathname.c_str()) == -1) {
+        wpi::errs() << "could not rename: " << std::strerror(errno) << "\n";
+      }
+
+      auto installSuccess = [sf = statusFunc](wpi::WebSocket& s) {
+        auto d = s.GetData<WebSocketData>();
+        unlink(d->upload.GetFilename());
+        SendWsText(s, {{"type", "romiServiceUploadComplete"}, {"success", true}});
+        RomiStatus::GetInstance()->Up(sf);
+      };
+
+      auto installFailure = [sf = statusFunc](wpi::WebSocket& s) {
+        auto d = s.GetData<WebSocketData>();
+        unlink(d->upload.GetFilename());
+        wpi::errs() << "could not install service\n";
+        SendWsText(s, {{"type", "romiServiceUploadComplete"}});
+        RomiStatus::GetInstance()->Up(sf);
+      };
+
+      RomiStatus::GetInstance()->Down(statusFunc);
+      RunProcess(ws, installSuccess, installFailure, NODE_HOME "/npm",
+                 uv::Process::Uid(APP_UID), uv::Process::Gid(APP_GID),
+                 uv::Process::Cwd(EXEC_HOME),
+                 uv::Process::Env("PATH=$PATH:" NODE_HOME),
+                 NODE_HOME "/npm",
+                 "install", "-g", pathname);
+
     }
   } else if (t == "networkSave") {
     auto statusFunc = [s = ws.shared_from_this()](wpi::StringRef msg) {

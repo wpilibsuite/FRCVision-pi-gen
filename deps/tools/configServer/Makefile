@@ -1,7 +1,7 @@
 IMG_VERSION?=$(shell git describe)
 DEPS_CFLAGS?=$(shell pkg-config --cflags cscore wpiutil) -std=c++17
 DEPS_LIBS?=$(shell pkg-config --libs --static cscore wpiutil)
-EXEC_HOME?=/home/${FIRST_USER_NAME}
+EXEC_HOME?=/home/pi
 FRC_JSON?=/boot/frc.json
 DHCPCD_CONF?=/boot/dhcpcd.conf
 WPA_SUPPLICANT_CONF?=/etc/wpa_supplicant/wpa_supplicant.conf
@@ -9,6 +9,8 @@ DNSMASQ_CONF?=/etc/dnsmasq.d/wpilib.conf
 HOSTAPD_CONF?=/etc/hostapd/hostapd.conf
 APP_UID?=1000
 APP_GID?=1000
+ROMI_JSON?=/boot/romi.json
+NODE_HOME?=/home/pi/.nvm/versions/node/v14.15.0/bin
 
 .PHONY: all clean install
 .SUFFIXES:
@@ -56,6 +58,8 @@ configServer: ${OBJS}
 	    '-DHOSTAPD_CONF="${HOSTAPD_CONF}"' \
 	    '-DAPP_UID=${APP_UID}' \
 	    '-DAPP_GID=${APP_GID}' \
+	    '-DROMI_JSON="${ROMI_JSON}"' \
+	    '-DNODE_HOME="${NODE_HOME}"' \
 	    $<
 
 %.html.cpp: %.html
