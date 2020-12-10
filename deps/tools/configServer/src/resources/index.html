@@ -199,6 +199,31 @@
               <div class="card-header">
                 <div class="row align-items-center">
                   <div class="col-auto mr-auto">
+                    <h6>Web Service Update</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-text">
+                  To perform an offline update of the Romi webservice, obtain an appropriate
+                  version from the GitHub release page, and upload the .tgz file here.
+                </p>
+                <form>
+                  <div class="form-group">
+                    <label for="romiServiceUploadFile">Upload Romi Webservice Package</label>
+                    <input type="file" class="form-control-file" id="romiServiceUploadFile" accept=".tgz">
+                  </div>
+                  <button id="romiServiceUploadButton" type="button" class="btn btn-primary" data-loading-text="<i class='spin' data-feather='loader'></i> Saving" disabled>
+                    <span data-feather="save"></span>
+                    <span id="romiServiceUploadButtonText">Save</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col-auto mr-auto">
                     <h6>External IO Configuration</h6>
                   </div>
                 </div>
