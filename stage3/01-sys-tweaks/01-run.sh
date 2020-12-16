@@ -101,7 +101,6 @@ tar xzf "${DOWNLOAD_DIR}/robotpy-cscore.tar.gz"
 mv robotpy-cscore-* robotpy-cscore
 echo "__version__ = '2020.0.1'" > robotpy-cscore/cscore/version.py
 pushd robotpy-cscore
-patch -p0 < "${SUB_STAGE_DIR}/files/robotpy-cscore.patch"
 rm -rf pybind11
 tar xzf "${DOWNLOAD_DIR}/pybind11.tar.gz"
 mv pybind11-* pybind11
