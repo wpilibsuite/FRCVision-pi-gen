@@ -107,7 +107,7 @@ var connectedButtonClasses = [
   'cameraCopyConfig',
   'cameraKey'
 ];
-var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton', 'romiSaveExternalIOConfig', 'romiServiceUploadButton'];
+var writableButtonIds = ['networkSave', 'visionSave', 'applicationSave', 'fileUploadButton', 'romiSaveExternalIOConfig', 'romiServiceUploadButton', 'romiCalibrateButton'];
 var systemStatusIds = ['systemMemoryFree1s', 'systemMemoryFree5s',
                        'systemMemoryAvail1s', 'systemMemoryAvail5s',
                        'systemCpuUser1s', 'systemCpuUser5s',
@@ -304,13 +304,21 @@ function connect() {
       case 'romiFirmwareLog':
         romiFirmwareLog(msg.data);
         break;
-      case 'romiExternalIOConfig':
+      case 'romiConfig':
         // Pre-fill the IO config dropdowns
         if (msg.romiConfig && msg.romiConfig.ioConfig) {
           for (var i = 0; i < msg.romiConfig.ioConfig.length; i++) {
             $('#romiExtIO' + i).val(msg.romiConfig.ioConfig[i]);
           }
           updateRomiRobotPorts();
+        }
+
+        // Pre-fill the saved gyro offset
+        if (msg.romiConfig && msg.romiConfig.gyroZeroOffset) {
+          var gyroOffsets = msg.romiConfig.gyroZeroOffset;
+          $("#romiCalibrationXValue").html(gyroOffsets.x.toFixed(3));
+          $("#romiCalibrationYValue").html(gyroOffsets.y.toFixed(3));
+          $("#romiCalibrationZValue").html(gyroOffsets.z.toFixed(3));
         }
         break;
       case 'romiServiceUploadComplete':
@@ -319,7 +327,7 @@ function connect() {
         if (msg.success) {
           displaySuccess('Romi WebService successfully uploaded!');
         }
-      break;
+        break;
       case 'networkSettings':
         $('#networkApproach').val(msg.networkApproach);
         $('#networkAddress').val(msg.networkAddress);
@@ -1237,6 +1245,71 @@ $('#fileUploadButton').click(function() {
     reader.readAsArrayBuffer(file.slice(start, nextSlice));
   }
   uploadFile(0);
+});
+
+// Romi Gyro Calibration
+$('#romiCalibrateButton').click(function() {
+  $('#romiCalibrateButton').button('loading');
+
+  // show the progress group
+  $('#romiCalibrationProgressGroup').removeAttr('style');
+  $('#romiCalibrationProgressPercent').html("(" + 0 + "%)");
+        $('#romiCalibrationProgressBar').attr("style", "width: " + 0 + "%");
+        $('#romiCalibrationProgressBar').attr("aria-valuenow", "0");
+
+  var baseUrl = "http://" + window.location.hostname + ":9001";
+
+  // Start the calibration
+  fetch(baseUrl + "/imu/calibrate", { method: "POST"})
+  .then(function(response) {
+    var lastState = "IDLE"; // other state is CALIBRATING
+    // Set up the interval
+    var statusInterval = setInterval(function() {
+      fetch(baseUrl + "/imu/status/calibration-state")
+      .then(function(response) { return response.json(); })
+      .then(function(calibrationState) {
+        if (lastState === "CALIBRATING" && calibrationState.state === "IDLE") {
+          // We've finished calibration
+          clearInterval(statusInterval);
+
+          fetch(baseUrl + "/imu/status/last-gyro-calibration-values")
+          .then(function(response) { return response.json(); })
+          .then(function(calibrationValues) {
+            var msg = {
+              type: "romiSaveGyroCalibration",
+              romiConfig: {
+                gyroZeroOffset: calibrationValues.zeroOffset
+              }
+            };
+            connection.send(JSON.stringify(msg));
+          });
+
+          $('#romiCalibrationProgressGroup').attr('style', 'display: none');
+          $('#romiCalibrateButton').button('reset');
+        }
+
+        $('#romiCalibrationTimeLeft').html(calibrationState.estimatedTimeLeft + " seconds left");
+        $('#romiCalibrationProgressPercent').html("(" + calibrationState.percentComplete + "%)");
+        $('#romiCalibrationProgressBar').attr("style", "width: " + calibrationState.percentComplete + "%");
+        $('#romiCalibrationProgressBar').attr("aria-valuenow", calibrationState.percentComplete.toString());
+
+        lastState = calibrationState.state;
+
+      })
+      .catch(function (err) {
+        clearInterval(statusInterval);
+        console.log("Error while initiating calibration: ", err);
+        $('#romiCalibrationProgressGroup').attr('style', 'display: none');
+        $('#romiCalibrateButton').button('reset');
+      });
+    }, 200);
+  })
+  .catch(function (err) {
+    console.log("Error while initiating calibration: ", err);
+    $('#romiCalibrationProgressGroup').attr('style', 'display: none');
+    $('#romiCalibrateButton').button('reset');
+  })
+
 });
 
 // Romi Service upload
