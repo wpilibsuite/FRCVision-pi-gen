@@ -1,5 +1,6 @@
 avrdude
 hostapd
 dnsmasq
+espeak
 python-serial
 python3-serial

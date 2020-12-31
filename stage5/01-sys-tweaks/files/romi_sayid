@@ -1,0 +1,46 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          romi_sayid
+# Required-Start:
+# Required-Stop:
+# Default-Start: 3
+# Default-Stop:
+# Short-Description: romi sayid
+# Description: Speaks the Romi unique ID to the audio output
+### END INIT INFO
+
+DAEMON=/usr/local/frc/bin/romi-sayid.sh
+PIDFILE=/run/romi_sayid.pid
+
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting romi sayid" "romi_sayid"
+    /sbin/start-stop-daemon --start --nicelevel 0 --quiet --oknodo --chdir "$PWD" --background --pidfile $PIDFILE --exec $DAEMON
+    log_end_msg $?
+    ;;
+  stop)
+    log_daemon_msg "Stopping romi sayid" "romi_sayid"
+    killproc -p $PIDFILE $DAEMON TERM
+    log_end_msg $?
+    ;;
+  status)
+    if pidofproc -p $PIDFILE $DAEMON >/dev/null 2>&1; then
+      echo "$DAEMON is running";
+      exit 0;
+    else
+      echo "$DAEMON is NOT running";
+      if test -f $PIDFILE; then exit 2; fi
+      exit 3;
+    fi
+    ;;
+  force-reload|restart)
+    $0 stop
+    $0 start
+    ;;
+  *)
+    echo "Usage: /etc/init.d/romi_sayid {start|stop|restart|force-reload}"
+    exit 1
+    ;;
+esac
