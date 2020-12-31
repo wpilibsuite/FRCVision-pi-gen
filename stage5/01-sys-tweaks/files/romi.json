@@ -1,3 +1,8 @@
 {
-    "ioConfig": ["dio", "ain", "ain", "pwm", "pwm"]
+    "ioConfig": ["dio", "ain", "ain", "pwm", "pwm"],
+    "gyroZeroOffset": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
 }

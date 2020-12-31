@@ -45,7 +45,7 @@ struct WebSocketData {
   wpi::sig::ScopedConnection visLogConn;
   wpi::sig::ScopedConnection romiStatusConn;
   wpi::sig::ScopedConnection romiLogConn;
-  wpi::sig::ScopedConnection romiIoConfigConn;
+  wpi::sig::ScopedConnection romiConfigConn;
   wpi::sig::ScopedConnection cameraListConn;
   wpi::sig::ScopedConnection netSettingsConn;
   wpi::sig::ScopedConnection visSettingsConn;
@@ -151,10 +151,10 @@ void InitWs(wpi::WebSocket& ws) {
           auto d = ws.GetData<WebSocketData>();
           if (d->romiLogEnabled) SendWsText(ws, j);
         });
-    data->romiIoConfigConn = romiStatus->ioConfig.connect_connection(
+    data->romiConfigConn = romiStatus->config.connect_connection(
         [&ws](const wpi::json& j) { SendWsText(ws, j); });
     romiStatus->UpdateStatus();
-    romiStatus->UpdateIoConfig(statusFunc);
+    romiStatus->UpdateConfig(statusFunc);
   }
 
   // send initial network settings
@@ -292,8 +292,16 @@ void ProcessWsText(wpi::WebSocket& ws, wpi::StringRef msg) {
       }
     } else if (subType == "SaveExternalIOConfig") {
       try {
-        RomiStatus::GetInstance()->SaveConfig(j.at("romiConfig"), statusFunc);
+        RomiStatus::GetInstance()->SaveConfig(j.at("romiConfig"), true, statusFunc);
       } catch (const wpi::json::exception& e) {
+        wpi::errs() << "could not read romiConfig value: " << e.what() << "\n";
+        return;
+      }
+    } else if (subType == "SaveGyroCalibration") {
+      try {
+        RomiStatus::GetInstance()->SaveConfig(j.at("romiConfig"), false, statusFunc);
+      }
+      catch (const wpi::json::exception& e) {
         wpi::errs() << "could not read romiConfig value: " << e.what() << "\n";
         return;
       }

@@ -45,19 +45,20 @@ class RomiStatus {
 
   void FirmwareUpdate(std::function<void(wpi::StringRef)> onFail);
 
-  void UpdateIoConfig(std::function<void(wpi::StringRef)> onFail);
+  void UpdateConfig(std::function<void(wpi::StringRef)> onFail);
 
-  void SaveConfig(const wpi::json& data, std::function<void(wpi::StringRef)> onFail);
+  void SaveConfig(const wpi::json& data, bool restartService, std::function<void(wpi::StringRef)> onFail);
 
   wpi::sig::Signal<const wpi::json&> update;
   wpi::sig::Signal<const wpi::json&> log;
-  wpi::sig::Signal<const wpi::json&> ioConfig;
+  wpi::sig::Signal<const wpi::json&> config;
 
   static std::shared_ptr<RomiStatus> GetInstance();
 
  private:
   void RunSvc(const char* cmd, std::function<void(wpi::StringRef)> onFail);
-  wpi::json GetIoConfigJson(std::function<void(wpi::StringRef)> onFail);
+  wpi::json ReadRomiConfigFile(std::function<void(wpi::StringRef)> onFail);
+  wpi::json GetConfigJson(std::function<void(wpi::StringRef)> onFail);
 
   std::shared_ptr<wpi::uv::Loop> m_loop;
 };

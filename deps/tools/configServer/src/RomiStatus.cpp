@@ -230,11 +230,11 @@ void RomiStatus::FirmwareUpdate(std::function<void(wpi::StringRef)> onFail) {
   }
 }
 
-void RomiStatus::UpdateIoConfig(std::function<void(wpi::StringRef)> onFail) {
-  ioConfig(GetIoConfigJson(onFail));
+void RomiStatus::UpdateConfig(std::function<void(wpi::StringRef)> onFail) {
+  config(GetConfigJson(onFail));
 }
 
-wpi::json RomiStatus::GetIoConfigJson(std::function<void(wpi::StringRef)> onFail) {
+wpi::json RomiStatus::ReadRomiConfigFile(std::function<void(wpi::StringRef)> onFail) {
   // Read config file
   std::error_code ec;
   wpi::raw_fd_istream is(ROMI_JSON, ec);
@@ -261,11 +261,31 @@ wpi::json RomiStatus::GetIoConfigJson(std::function<void(wpi::StringRef)> onFail
     return wpi::json();
   }
 
-  return {{"type", "romiExternalIOConfig"},
+  return j;
+}
+
+wpi::json RomiStatus::GetConfigJson(std::function<void(wpi::StringRef)> onFail) {
+  wpi::json j = ReadRomiConfigFile(onFail);
+  return {{"type", "romiConfig"},
           {"romiConfig", j}};
 }
 
-void RomiStatus::SaveConfig(const wpi::json& data, std::function<void(wpi::StringRef)> onFail) {
+void RomiStatus::SaveConfig(const wpi::json& data, bool restartService, std::function<void(wpi::StringRef)> onFail) {
+  // We should first read in the file
+  wpi::json configFileJson = ReadRomiConfigFile(onFail);
+
+  // Verify that it is an object
+  if (!data.is_object()) {
+    onFail("invalid romi config format. Should be an object");
+    return;
+  }
+
+  // Iterate through all the keys in `data`
+  // Add them to configFileJson
+  for (auto it = data.begin(); it != data.end(); ++it) {
+    configFileJson[it.key()] = it.value();
+  }
+
   {
     // write file
     std::error_code ec;
@@ -274,11 +294,13 @@ void RomiStatus::SaveConfig(const wpi::json& data, std::function<void(wpi::Strin
       onFail("could not write to romi config");
       return;
     }
-    data.dump(os, 4);
+    configFileJson.dump(os, 4);
     os << "\n";
   }
 
-  // Terminate Romi process so it reloads the file
-  Terminate(onFail);
-  UpdateIoConfig(onFail);
+  if (restartService) {
+    // Terminate Romi process so it reloads the file
+    Terminate(onFail);
+  }
+  UpdateConfig(onFail);
 }
