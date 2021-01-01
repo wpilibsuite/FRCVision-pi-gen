@@ -8,7 +8,8 @@ mkdir -p "${ROOTFS_DIR}/var/lib/systemd/rfkill/"
 echo 0 > "${ROOTFS_DIR}/var/lib/systemd/rfkill/platform-3f300000.mmcnr:wlan"
 echo 0 > "${ROOTFS_DIR}/var/lib/systemd/rfkill/platform-fe300000.mmcnr:wlan"
 
-install -m 644 files/hostapd.conf "${ROOTFS_DIR}/etc/hostapd/hostapd.conf"
+# Install hostapd.conf to .orig so it's not activated on first boot
+install -m 644 files/hostapd.conf "${ROOTFS_DIR}/etc/hostapd/hostapd.conf.orig"
 install -m 644 files/dnsmasq.conf "${ROOTFS_DIR}/etc/dnsmasq.d/wpilib.conf"
 
 cat <<END >> "${ROOTFS_DIR}/etc/wpa_supplicant/wpa_supplicant.conf"

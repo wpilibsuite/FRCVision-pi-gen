@@ -2,6 +2,17 @@
 
 SUB_STAGE_DIR=${PWD}
 
+# Override resize2fs_once to add unique SSID setting on first boot
+install -m 755 files/resize2fs_once	"${ROOTFS_DIR}/etc/init.d/"
+
+# Install romi_sayid.sh and startup script
+install -m 755 files/romi-sayid.sh	"${ROOTFS_DIR}/usr/local/frc/bin/"
+install -m 755 files/romi_sayid		"${ROOTFS_DIR}/etc/init.d/"
+
+on_chroot << EOF
+systemctl enable romi_sayid
+EOF
+
 # enable i2c
 install -m 644 files/i2c.conf "${ROOTFS_DIR}/etc/modules-load.d/"
 sed -i -e "s/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/" "${ROOTFS_DIR}/boot/config.txt"
