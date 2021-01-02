@@ -58,7 +58,7 @@ wget -nc -nv -O pynetworktables.tar.gz \
 
 # robotpy-cscore
 wget -nc -nv -O robotpy-cscore.tar.gz \
-    https://github.com/robotpy/robotpy-cscore/archive/2020.0.0.tar.gz
+    https://github.com/robotpy/robotpy-cscore/archive/2020.0.1.tar.gz
 
 # pybind11 submodule of robotpy-cscore
 wget -nc -nv -O pybind11.tar.gz \
@@ -99,9 +99,8 @@ echo "__version__ = '2020.0.1'" > pynetworktables/_pynetworktables/_impl/version
 # robotpy-cscore
 tar xzf "${DOWNLOAD_DIR}/robotpy-cscore.tar.gz"
 mv robotpy-cscore-* robotpy-cscore
-echo "__version__ = '2020.0.0'" > robotpy-cscore/cscore/version.py
+echo "__version__ = '2020.0.1'" > robotpy-cscore/cscore/version.py
 pushd robotpy-cscore
-patch -p0 < "${SUB_STAGE_DIR}/files/robotpy-cscore.patch"
 rm -rf pybind11
 tar xzf "${DOWNLOAD_DIR}/pybind11.tar.gz"
 mv pybind11-* pybind11
@@ -318,7 +317,7 @@ sh -c 'tar cf - cscore' | \
 arm-raspbian10-linux-gnueabihf-g++ \
     --sysroot=${ROOTFS_DIR} \
     -g -O -Wall -fvisibility=hidden -shared -fPIC -std=c++17 \
-    -o "${ROOTFS_DIR}/usr/local/lib/python3.7/dist-packages/cscore/_cscore.cpython-37m-arm-linux-gnueabihf.so" \
+    -o "${ROOTFS_DIR}/usr/local/lib/python3.7/dist-packages/_cscore.cpython-37m-arm-linux-gnueabihf.so" \
     -Ipybind11/include \
     `env PKG_CONFIG_LIBDIR=${PKG_CONFIG_LIBDIR}:${ROOTFS_DIR}/usr/local/frc/lib/pkgconfig pkg-config --cflags python3 cscore wpiutil` \
     src/_cscore.cpp \
