@@ -12,7 +12,6 @@ import sys
 
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 from networktables import NetworkTablesInstance
-import ntcore
 
 #   JSON format:
 #   {
@@ -202,9 +201,9 @@ def startSwitchedCamera(config):
 
     NetworkTablesInstance.getDefault().getEntry(config.key).addListener(
         listener,
-        ntcore.constants.NT_NOTIFY_IMMEDIATE |
-        ntcore.constants.NT_NOTIFY_NEW |
-        ntcore.constants.NT_NOTIFY_UPDATE)
+        NetworkTablesInstance.NotifyFlags.IMMEDIATE |
+        NetworkTablesInstance.NotifyFlags.NEW |
+        NetworkTablesInstance.NotifyFlags.UPDATE)
 
     return server
 
