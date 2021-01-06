@@ -8,5 +8,6 @@ echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" > "${
 
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 
+on_chroot << EOF
 sudo apt-get update
-
+EOF
