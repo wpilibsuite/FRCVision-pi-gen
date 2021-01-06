@@ -2,7 +2,8 @@
 
 echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" > "${ROOTFS_DIR}/etc/apt/sources.list.d/coral-edgetpu.list"
 
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | on_chroot apt-key add -
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
 on_chroot << EOF
-apt-get update
+sudo apt-get update
 EOF
