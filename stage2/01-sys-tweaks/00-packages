@@ -32,3 +32,4 @@ pciutils
 rpi-eeprom
 raspinfo
 python3-picamera
+libedgetpu1-std

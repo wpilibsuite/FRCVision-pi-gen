@@ -343,6 +343,14 @@ install -m 755 ${EXTRACT_DIR}/pixy2/build/python_demos/_pixy.*.so "${ROOTFS_DIR}
 rm -rf "${EXTRACT_DIR}/pixy2/build"
 
 #
+# Install ML dependency
+#
+
+on_chroot << EOF
+pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp37-cp37m-linux_armv7l.whl
+EOF
+
+#
 # Finish up
 #
 
