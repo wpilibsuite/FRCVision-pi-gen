@@ -275,6 +275,7 @@ int main(int argc, char* argv[]) {
   } else {
     wpi::outs() << "Setting up NetworkTables client for team " << team << '\n';
     ntinst.StartClientTeam(team);
+    ntinst.StartDSClient();
   }
 
   // start cameras
