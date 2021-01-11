@@ -309,6 +309,7 @@ public final class Main {
     } else {
       System.out.println("Setting up NetworkTables client for team " + team);
       ntinst.startClientTeam(team);
+      ntinst.startDSClient();
     }
 
     // start cameras
