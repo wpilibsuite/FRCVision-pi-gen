@@ -33,3 +33,4 @@ rpi-eeprom
 raspinfo
 python3-picamera
 libedgetpu1-std
+python3-edgetpu
