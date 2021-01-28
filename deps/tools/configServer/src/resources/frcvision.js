@@ -693,7 +693,7 @@ $('#networkSave').click(function() {
     networkGateway: $('#networkGateway').val(),
     networkDNS: $('#networkDNS').val(),
     wifiMode: $('#wifiMode').val(),
-    wifiChannel: parseInt($('#wifiChannel').val()),
+    wifiChannel: parseInt($('#wifiChannel').val()) || 0,
     wifiSsid: $('#wifiSsid').val(),
     wifiWpa2: $('#wifiWpa2').val(),
     wifiNetworkApproach: $('#wifiNetworkApproach').val(),
