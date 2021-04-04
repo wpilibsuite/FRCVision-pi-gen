@@ -9,3 +9,6 @@ python3-pybind11
 python3-pip
 libusb-1.0-0-dev
 swig
+pigpio
+python-pigpio
+python3-pigpio
