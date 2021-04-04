@@ -250,19 +250,21 @@ sh -c 'cd build/allwpilib-build/jar && tar cf - *.jar' | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/java && tar xf -"
 
 # headers
-sh -c "cd ${EXTRACT_DIR}/allwpilib/wpiutil/src/main/native/include && tar cf - wpi" | \
+sh -c "cd ${EXTRACT_DIR}/allwpilib/wpiutil/src/main/native/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
-sh -c "cd ${EXTRACT_DIR}/allwpilib/wpiutil/src/main/native/libuv/include && tar cf - uv.h uv" | \
+sh -c "cd ${EXTRACT_DIR}/allwpilib/wpiutil/src/main/native/libuv/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
 sh -c "cd ${EXTRACT_DIR}/allwpilib/cscore/src/main/native/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
 sh -c "cd ${EXTRACT_DIR}/allwpilib/ntcore/src/main/native/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
-sh -c "cd ${EXTRACT_DIR}/allwpilib/cameraserver/src/main/native/include && tar cf - cameraserver vision" | \
+sh -c "cd ${EXTRACT_DIR}/allwpilib/cameraserver/src/main/native/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
 sh -c "cd ${EXTRACT_DIR}/allwpilib/hal/src/main/native/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
-sh -c "cd ${EXTRACT_DIR}/allwpilib/wpilibc/src/main/native/include && tar cf - frc" | \
+sh -c "cd ${EXTRACT_DIR}/allwpilib/wpimath/src/main/native/include && tar cf - ." | \
+    sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
+sh -c "cd ${EXTRACT_DIR}/allwpilib/wpilibc/src/main/native/include && tar cf - ." | \
     sh -c "cd ${ROOTFS_DIR}/usr/local/frc/include && tar xf -"
 
 # executables (use static build to ensure they don't break)
