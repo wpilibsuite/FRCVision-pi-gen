@@ -169,9 +169,9 @@ build_opencv build/opencv-build Release ON "" || exit 1
 build_opencv build/opencv-static Release OFF "-static" || exit 1
 
 # fix up java install
-cp -p ${ROOTFS_DIR}/usr/local/frc/share/OpenCV/java/libopencv_java452*.so "${ROOTFS_DIR}/usr/local/frc/lib/"
+cp -p ${ROOTFS_DIR}/usr/local/frc/share/java/opencv4/libopencv_java452*.so "${ROOTFS_DIR}/usr/local/frc/lib/"
 mkdir -p "${ROOTFS_DIR}/usr/local/frc/java"
-cp -p "${ROOTFS_DIR}/usr/local/frc/share/OpenCV/java/opencv-452.jar" "${ROOTFS_DIR}/usr/local/frc/java/"
+cp -p "${ROOTFS_DIR}/usr/local/frc/share/java/opencv4/opencv-452.jar" "${ROOTFS_DIR}/usr/local/frc/java/"
 
 # the opencv build names the python .so with the build platform name
 # instead of the target platform, so rename it
