@@ -11,7 +11,7 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 set(CMAKE_SYSROOT "$ENV{ROOTFS_DIR}")
 
-include("$ENV{ROOTFS_DIR}/usr/src/opencv-3.4.7/platforms/linux/gnu.toolchain.cmake")
+include("$ENV{ROOTFS_DIR}/usr/src/opencv-4.5.2/platforms/linux/gnu.toolchain.cmake")
 
 if(NOT DEFINED CMAKE_C_COMPILER)
   find_program(CMAKE_C_COMPILER NAMES ${GNU_MACHINE}${FLOAT_ABI_SUFFIX}-gcc${__GCC_VER_SUFFIX})
